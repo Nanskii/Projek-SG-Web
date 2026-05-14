@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
@@ -12,20 +12,24 @@ export default function Navbar() {
   const { currentUser } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm">
+      <nav className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-xl shadow-md rounded-b-3xl border-b border-gray-100' : 'bg-white/80 backdrop-blur-xl border-b border-gray-100 shadow-sm'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-emerald-200 group-hover:shadow-emerald-300 transition-shadow">
-                W
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">
-                Warunge
-              </span>
+            <Link href="/" className="flex items-center">
+              <img src="/Logo3.png" alt="Logo Warunge" className="w-35 h-35 object-contain bg-transparent" />
             </Link>
 
             {/* Desktop Navigation */}
@@ -35,7 +39,7 @@ export default function Navbar() {
               <NavLink href="/keranjang">
                 Keranjang
                 {totalItems > 0 && (
-                  <span className="ml-1.5 px-2 py-0.5 text-xs font-bold bg-emerald-500 text-white rounded-full animate-pulse">
+                  <span className="ml-1.5 px-2 py-0.5 text-xs font-bold bg-[#29496d] text-white rounded-full animate-pulse">
                     {totalItems}
                   </span>
                 )}
@@ -49,7 +53,10 @@ export default function Navbar() {
                 onClick={() => setSwitcherOpen(true)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors cursor-pointer"
               >
-                <span className="text-lg">{ROLE_ICONS[currentUser.role]}</span>
+                {(() => {
+                  const Icon = ROLE_ICONS[currentUser.role];
+                  return <Icon className="w-5 h-5 text-[#29496d]" />;
+                })()}
                 <div className="text-left">
                   <p className="text-xs font-semibold text-gray-800 leading-none">{currentUser.name}</p>
                   <p className="text-[10px] text-gray-500">{ROLE_LABELS[currentUser.role]}</p>
@@ -67,7 +74,7 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                 </svg>
                 {totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 flex items-center justify-center text-[10px] font-bold bg-emerald-500 text-white rounded-full">
+                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 flex items-center justify-center text-[10px] font-bold bg-[#29496d] text-white rounded-full">
                     {totalItems}
                   </span>
                 )}
@@ -103,12 +110,15 @@ export default function Navbar() {
                   onClick={() => { setSwitcherOpen(true); setMenuOpen(false); }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
                 >
-                  <span className="text-xl">{ROLE_ICONS[currentUser.role]}</span>
+                  {(() => {
+                    const Icon = ROLE_ICONS[currentUser.role];
+                    return <Icon className="w-6 h-6 text-[#29496d]" />;
+                  })()}
                   <div className="text-left">
                     <p className="text-sm font-semibold text-gray-800">{currentUser.name}</p>
                     <p className="text-xs text-gray-500">{ROLE_LABELS[currentUser.role]}</p>
                   </div>
-                  <span className="ml-auto text-xs text-emerald-600 font-medium">Ganti →</span>
+                  <span className="ml-auto text-xs text-[#29496d] font-medium">Ganti →</span>
                 </button>
               </div>
             </div>
@@ -125,7 +135,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+      className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-[#29496d] hover:bg-[#f5f7fb] transition-colors"
     >
       {children}
     </Link>
@@ -137,9 +147,11 @@ function MobileNavLink({ href, children, onClick }: { href: string; children: Re
     <Link
       href={href}
       onClick={onClick}
-      className="block px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+      className="block px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:text-[#29496d] hover:bg-[#f5f7fb] transition-colors"
     >
       {children}
     </Link>
   );
 }
+
+

@@ -7,6 +7,8 @@ import { products } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { formatCurrency, calculateDiscount } from "@/lib/utils";
 import ProductCard from "@/components/katalog/ProductCard";
+import { categories } from "@/data/categories";
+import { Frown, ArrowLeft, Flame, Package } from "lucide-react";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -17,11 +19,11 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <div className="text-6xl mb-4">😢</div>
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center flex flex-col items-center">
+        <Frown className="w-16 h-16 text-gray-300 mb-4" />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Produk Tidak Ditemukan</h1>
-        <Link href="/katalog" className="text-emerald-600 font-semibold hover:underline">
-          ← Kembali ke Katalog
+        <Link href="/katalog" className="flex items-center text-[#29496d] font-semibold hover:underline mt-2">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Kembali ke Katalog
         </Link>
       </div>
     );
@@ -45,18 +47,14 @@ export default function ProductDetailPage() {
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const categoryEmojis: Record<string, string> = {
-    sembako: "🍚", atk: "📝", "rumah-tangga": "🧹",
-    elektronik: "📱", fashion: "👕", bangunan: "🏗️",
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 animate-fade-in">
-        <Link href="/" className="hover:text-emerald-600 transition-colors">Beranda</Link>
+        <Link href="/" className="hover:text-[#29496d] transition-colors">Beranda</Link>
         <span>/</span>
-        <Link href="/katalog" className="hover:text-emerald-600 transition-colors">Katalog</Link>
+        <Link href="/katalog" className="hover:text-[#29496d] transition-colors">Katalog</Link>
         <span>/</span>
         <span className="text-gray-900 font-medium truncate">{product.name}</span>
       </nav>
@@ -64,8 +62,12 @@ export default function ProductDetailPage() {
       {/* Product Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16 animate-slide-up">
         {/* Image */}
-        <div className="relative aspect-square bg-gradient-to-br from-emerald-50 to-green-100 rounded-3xl overflow-hidden flex items-center justify-center">
-          <span className="text-[120px]">{categoryEmojis[product.category] || "📦"}</span>
+        <div className="relative aspect-square bg-[#f8fafc] rounded-3xl overflow-hidden flex items-center justify-center text-gray-300">
+          {(() => {
+            const cat = categories.find(c => c.id === product.category);
+            const Icon = cat?.icon || Package;
+            return <Icon className="w-32 h-32 sm:w-48 sm:h-48" />;
+          })()}
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
             {product.isPromo && discount > 0 && (
@@ -74,8 +76,8 @@ export default function ProductDetailPage() {
               </span>
             )}
             {product.isBestSeller && (
-              <span className="px-3 py-1.5 bg-amber-400 text-amber-900 text-sm font-bold rounded-xl shadow-lg">
-                🔥 Best Seller
+              <span className="flex items-center px-3 py-1.5 bg-amber-400 text-amber-900 text-sm font-bold rounded-xl shadow-lg">
+                <Flame className="w-4 h-4 mr-1" /> Best Seller
               </span>
             )}
           </div>
@@ -84,7 +86,7 @@ export default function ProductDetailPage() {
         {/* Info */}
         <div className="flex flex-col">
           <div className="mb-2">
-            <span className="text-sm text-emerald-600 font-semibold uppercase tracking-wider">
+            <span className="text-sm text-[#29496d] font-semibold uppercase tracking-wider">
               {product.supplier}
             </span>
           </div>
@@ -109,9 +111,9 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Price */}
-          <div className="bg-emerald-50 rounded-2xl p-5 mb-6">
+          <div className="bg-[#f5f7fb] rounded-2xl p-5 mb-6">
             <div className="flex items-end gap-3">
-              <span className="text-3xl font-extrabold text-emerald-600">
+              <span className="text-3xl font-extrabold text-[#29496d]">
                 {formatCurrency(product.price)}
               </span>
               {product.originalPrice && (
@@ -120,7 +122,7 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
-            <p className="text-sm text-emerald-700 mt-1">
+            <p className="text-sm text-[#203a59] mt-1">
               per {product.unit} · Stok tersedia: <span className="font-semibold">{product.stock}</span>
             </p>
           </div>
@@ -168,8 +170,8 @@ export default function ProductDetailPage() {
               onClick={handleAddToCart}
               className={`flex-1 py-3 px-6 rounded-xl font-bold text-white transition-all shadow-lg cursor-pointer ${
                 addedToCart
-                  ? "bg-green-500 shadow-green-200"
-                  : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200 hover:shadow-emerald-300"
+                  ? "bg-[#29496d] shadow-[#29496d]/20"
+                  : "bg-[#29496d] hover:bg-[#29496d] shadow-[#29496d]/20 hover:shadow-[#29496d]/25"
               }`}
             >
               {addedToCart ? "✓ Ditambahkan!" : `Tambah ke Keranjang — ${formatCurrency(product.price * quantity)}`}
@@ -194,3 +196,5 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+
+

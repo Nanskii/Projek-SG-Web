@@ -49,17 +49,22 @@ export default function UserSwitcher({ onClose }: UserSwitcherProps) {
                 onClick={() => handleSwitch(user.id)}
                 className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? "border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-100"
-                    : "border-gray-100 hover:border-emerald-200 hover:bg-gray-50"
+                    ? "border-[#29496d] bg-[#f5f7fb] shadow-md shadow-[#29496d]/10"
+                    : "border-gray-100 hover:border-[#a3b0cc] hover:bg-gray-50"
                 }`}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                  isActive ? "bg-emerald-100" : "bg-gray-100"
-                }`}>
-                  {ROLE_ICONS[user.role]}
-                </div>
+                {(() => {
+                  const Icon = ROLE_ICONS[user.role];
+                  return (
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      isActive ? "bg-[#e7eff7]" : "bg-gray-100"
+                    }`}>
+                      <Icon className={`w-6 h-6 ${isActive ? "text-[#29496d]" : "text-gray-500"}`} />
+                    </div>
+                  );
+                })()}
                 <div className="text-left flex-1">
-                  <p className={`font-semibold ${isActive ? "text-emerald-700" : "text-gray-800"}`}>
+                  <p className={`font-semibold ${isActive ? "text-[#203a59]" : "text-gray-800"}`}>
                     {user.name}
                   </p>
                   <p className="text-sm text-gray-500">{ROLE_LABELS[user.role]}</p>
@@ -68,7 +73,7 @@ export default function UserSwitcher({ onClose }: UserSwitcherProps) {
                   )}
                 </div>
                 {isActive && (
-                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-[#29496d] flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
@@ -88,3 +93,5 @@ export default function UserSwitcher({ onClose }: UserSwitcherProps) {
     </div>
   );
 }
+
+

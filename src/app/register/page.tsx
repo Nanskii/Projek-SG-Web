@@ -22,7 +22,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-3xl shadow-xl shadow-emerald-200 mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#29496d] flex items-center justify-center text-white font-bold text-3xl shadow-xl shadow-[#29496d]/20 mb-4">
             W
           </div>
           <h1 className="text-2xl font-extrabold text-gray-900">Daftar di Warunge</h1>
@@ -37,7 +37,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 placeholder="Nama Anda"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
               />
             </div>
             <div>
@@ -45,7 +45,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 placeholder="nama@email.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
               />
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function RegisterPage() {
             <input
               type="password"
               placeholder="Minimal 8 karakter"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
             />
           </div>
 
@@ -64,7 +64,7 @@ export default function RegisterPage() {
             <input
               type="text"
               placeholder="Opsional"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
             />
           </div>
 
@@ -79,12 +79,12 @@ export default function RegisterPage() {
                   onClick={() => setSelectedRole(role)}
                   className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${
                     selectedRole === role
-                      ? "border-emerald-500 bg-emerald-50"
-                      : "border-gray-100 hover:border-emerald-200"
+                      ? "border-[#29496d] bg-[#f5f7fb]"
+                      : "border-gray-100 hover:border-[#a3b0cc]"
                   }`}
                 >
                   <span className="text-xl">{ROLE_ICONS[role]}</span>
-                  <span className={`text-sm font-semibold ${selectedRole === role ? "text-emerald-700" : "text-gray-600"}`}>
+                  <span className={`text-sm font-semibold ${selectedRole === role ? "text-[#203a59]" : "text-gray-600"}`}>
                     {ROLE_LABELS[role]}
                   </span>
                 </button>
@@ -94,7 +94,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-emerald-200 cursor-pointer"
+            className="w-full py-3.5 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer"
           >
             Daftar Sekarang
           </button>
@@ -106,7 +106,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Sudah punya akun?{" "}
-          <Link href="/login" className="text-emerald-600 font-semibold hover:underline">
+          <Link href="/login" className="text-[#29496d] font-semibold hover:underline">
             Masuk
           </Link>
         </p>
@@ -114,3 +114,7 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+
+
+

@@ -9,11 +9,8 @@ export default function Footer() {
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg">
-                W
-              </div>
-              <span className="text-xl font-bold text-white">Warunge</span>
+            <Link href="/" className="flex -mt-12 -mb-10">
+              <img src="/Logo3.png" alt="Logo Warunge" className="w-48 h-auto object-contain bg-transparent" />
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
               Platform e-procurement yang memudahkan pengadaan barang secara transparan dan terdokumentasi.
@@ -81,10 +78,12 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
     <li>
       <Link
         href={href}
-        className="text-sm text-gray-400 hover:text-emerald-400 transition-colors"
+        className="text-sm text-gray-400 hover:text-[#29496d] transition-colors"
       >
         {children}
       </Link>
     </li>
   );
 }
+
+

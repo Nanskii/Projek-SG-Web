@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { ROLE_LABELS, ROLE_ICONS } from "@/types/user";
 import { useRouter } from "next/navigation";
+import { Info } from "lucide-react";
 
 export default function LoginPage() {
   const { currentUser, switchUser, allUsers } = useUser();
@@ -20,7 +21,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-3xl shadow-xl shadow-emerald-200 mb-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#29496d] flex items-center justify-center text-white font-bold text-3xl shadow-xl shadow-[#29496d]/20 mb-4">
             W
           </div>
           <h1 className="text-2xl font-extrabold text-gray-900">Masuk ke Warunge</h1>
@@ -37,17 +38,20 @@ export default function LoginPage() {
                 onClick={() => handleSelectUser(user.id)}
                 className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? "border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-100"
-                    : "border-gray-100 bg-white hover:border-emerald-200 hover:shadow-md"
+                    ? "border-[#29496d] bg-[#f5f7fb] shadow-lg shadow-[#29496d]/10"
+                    : "border-gray-100 bg-white hover:border-[#a3b0cc] hover:shadow-md"
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
-                  isActive ? "bg-emerald-100" : "bg-gray-100"
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  isActive ? "bg-[#e7eff7]" : "bg-gray-100"
                 }`}>
-                  {ROLE_ICONS[user.role]}
+                  {(() => {
+                    const RoleIcon = ROLE_ICONS[user.role];
+                    return <RoleIcon className={`w-6 h-6 ${isActive ? "text-[#29496d]" : "text-gray-500"}`} />;
+                  })()}
                 </div>
                 <div className="text-left flex-1">
-                  <p className={`font-bold ${isActive ? "text-emerald-700" : "text-gray-800"}`}>
+                  <p className={`font-bold ${isActive ? "text-[#203a59]" : "text-gray-800"}`}>
                     {user.name}
                   </p>
                   <p className="text-sm text-gray-500">{ROLE_LABELS[user.role]}</p>
@@ -79,7 +83,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="nama@email.com"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
               />
             </div>
             <div>
@@ -87,21 +91,21 @@ export default function LoginPage() {
               <input
                 type="password"
                 placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
               />
             </div>
-            <button className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-emerald-200 cursor-pointer">
+            <button className="w-full py-3 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer">
               Masuk
             </button>
           </div>
-          <p className="text-xs text-gray-400 text-center mt-4">
-            ℹ️ Form ini hanya untuk tampilan. Gunakan pilihan profil di atas untuk login simulasi.
+          <p className="text-xs text-gray-400 text-center mt-4 flex items-center justify-center gap-1.5">
+            <Info className="w-4 h-4" /> Form ini hanya untuk tampilan. Gunakan pilihan profil di atas untuk login simulasi.
           </p>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Belum punya akun?{" "}
-          <Link href="/register" className="text-emerald-600 font-semibold hover:underline">
+          <Link href="/register" className="text-[#29496d] font-semibold hover:underline">
             Daftar
           </Link>
         </p>
@@ -109,3 +113,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
+
+

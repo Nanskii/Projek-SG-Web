@@ -1,3 +1,6 @@
+import React from "react";
+import { Building2, Store, Home, Truck } from "lucide-react";
+
 export type UserRole = "enterprise" | "umkm" | "household" | "distributor";
 
 export interface UserProfile {
@@ -16,9 +19,9 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   distributor: "Distributor",
 };
 
-export const ROLE_ICONS: Record<UserRole, string> = {
-  enterprise: "🏢",
-  umkm: "🏪",
-  household: "🏠",
-  distributor: "🚚",
+export const ROLE_ICONS: Record<UserRole, React.ComponentType<{ className?: string }>> = {
+  enterprise: Building2,
+  umkm: Store,
+  household: Home,
+  distributor: Truck,
 };

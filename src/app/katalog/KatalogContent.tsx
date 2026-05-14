@@ -6,6 +6,7 @@ import { products } from "@/data/products";
 import { categories } from "@/data/categories";
 import ProductCard from "@/components/katalog/ProductCard";
 import { CategoryType } from "@/types/product";
+import { LayoutGrid, Search } from "lucide-react";
 
 type SortOption = "default" | "price-asc" | "price-desc" | "rating" | "newest";
 
@@ -84,7 +85,7 @@ export default function KatalogContent() {
                   placeholder="Ketik nama produk..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] focus:border-transparent bg-gray-50"
                 />
               </div>
             </div>
@@ -95,25 +96,23 @@ export default function KatalogContent() {
               <div className="space-y-1">
                 <button
                   onClick={() => setSelectedCategory("all")}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
-                    selectedCategory === "all"
-                      ? "bg-emerald-50 text-emerald-700"
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${selectedCategory === "all"
+                      ? "bg-[#f5f7fb] text-[#203a59]"
                       : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
-                  📋 Semua Kategori
+                  <span className="flex items-center"><LayoutGrid className="w-4 h-4 mr-2" /> Semua Kategori</span>
                 </button>
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${
-                      selectedCategory === cat.id
-                        ? "bg-emerald-50 text-emerald-700"
+                    className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${selectedCategory === cat.id
+                        ? "bg-[#f5f7fb] text-[#203a59]"
                         : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                      }`}
                   >
-                    <span>{cat.icon} {cat.name}</span>
+                    <span className="flex items-center"><cat.icon className="w-4 h-4 mr-2" /> {cat.name}</span>
                     <span className="text-xs text-gray-400">{cat.count}</span>
                   </button>
                 ))}
@@ -130,7 +129,7 @@ export default function KatalogContent() {
                 step={5000}
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([0, Number(e.target.value)])}
-                className="w-full accent-emerald-500"
+                className="w-full accent-[#29496d]"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>Rp 0</span>
@@ -146,7 +145,7 @@ export default function KatalogContent() {
                 setSortBy("default");
                 setPriceRange([0, 200000]);
               }}
-              className="w-full py-2 text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors cursor-pointer"
+              className="w-full py-2 text-sm font-medium text-gray-500 hover:text-[#29496d] hover:bg-[#f5f7fb] rounded-xl transition-colors cursor-pointer"
             >
               Reset Filter
             </button>
@@ -164,7 +163,7 @@ export default function KatalogContent() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#29496d] cursor-pointer"
               >
                 <option value="default">Urutkan: Default</option>
                 <option value="price-asc">Harga: Rendah → Tinggi</option>
@@ -176,9 +175,8 @@ export default function KatalogContent() {
               <div className="flex border border-gray-200 rounded-xl overflow-hidden">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 transition-colors cursor-pointer ${
-                    viewMode === "grid" ? "bg-emerald-500 text-white" : "bg-white text-gray-400 hover:bg-gray-50"
-                  }`}
+                  className={`p-2 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-[#29496d] text-white" : "bg-white text-gray-400 hover:bg-gray-50"
+                    }`}
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" />
@@ -186,9 +184,8 @@ export default function KatalogContent() {
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 transition-colors cursor-pointer ${
-                    viewMode === "list" ? "bg-emerald-500 text-white" : "bg-white text-gray-400 hover:bg-gray-50"
-                  }`}
+                  className={`p-2 transition-colors cursor-pointer ${viewMode === "list" ? "bg-[#29496d] text-white" : "bg-white text-gray-400 hover:bg-gray-50"
+                    }`}
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z" />
@@ -213,7 +210,7 @@ export default function KatalogContent() {
             </div>
           ) : (
             <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-              <div className="text-6xl mb-4">🔍</div>
+              <Search className="w-16 h-16 text-gray-300 mb-4 mx-auto" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">Produk Tidak Ditemukan</h3>
               <p className="text-gray-500">Coba ubah kata kunci atau filter pencarian Anda</p>
             </div>
@@ -223,3 +220,6 @@ export default function KatalogContent() {
     </div>
   );
 }
+
+
+

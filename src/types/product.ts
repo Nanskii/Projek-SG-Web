@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type CategoryType =
   | "sembako"
   | "atk"
@@ -27,6 +29,6 @@ export interface Product {
 export interface Category {
   id: CategoryType;
   name: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   count: number;
 }

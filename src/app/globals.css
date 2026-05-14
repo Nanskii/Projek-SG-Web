@@ -6,15 +6,15 @@
   --color-foreground: var(--foreground);
   --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --color-primary: #16A34A;
-  --color-primary-dark: #15803D;
-  --color-secondary: #EAB308;
-  --color-accent: #3B82F6;
+  --color-primary: #29496d;
+  --color-primary-dark: #203a59;
+  --color-secondary: #dc5c3e;
+  --color-accent: #dc5c3e;
 }
 
 :root {
-  --background: #F8FAFC;
-  --foreground: #1E293B;
+  --background: #F5F7FB;
+  --foreground: #10203A;
 }
 
 body {
@@ -96,10 +96,10 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #16A34A, #15803D, #047857);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-secondary);
+  background: none;
+  -webkit-text-fill-color: initial;
+  background-clip: unset;
 }
 
 /* Line clamp utilities */
@@ -116,3 +116,6 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+
+

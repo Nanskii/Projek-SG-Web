@@ -6,6 +6,9 @@ import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { formatCurrency, generateDocumentNumber } from "@/lib/utils";
 import { ROLE_LABELS } from "@/types/user";
+import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle } from "lucide-react";
+import { products } from "@/data/products";
+import ProductCard from "@/components/katalog/ProductCard";
 
 export default function KeranjangPage() {
   const { items, removeItem, updateQuantity, clearCart, totalAmount } = useCart();
@@ -17,6 +20,10 @@ export default function KeranjangPage() {
 
   const shippingCost = totalAmount > 500000 ? 0 : 15000;
   const grandTotal = totalAmount + shippingCost;
+
+  const recommendedProducts = products
+    .filter((p) => !items.find((i) => i.productId === p.id) && (p.isBestSeller || p.isPromo))
+    .slice(0, 4);
 
   const handleCheckout = () => {
     setCheckoutDone(true);
@@ -51,14 +58,14 @@ export default function KeranjangPage() {
   if (checkoutDone) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center animate-fade-in">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-100 flex items-center justify-center">
-          <svg className="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#e7eff7] flex items-center justify-center">
+          <svg className="w-10 h-10 text-[#29496d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Pesanan Berhasil! 🎉</h1>
         <p className="text-gray-500 mb-2">Nomor Dokumen:</p>
-        <p className="text-lg font-bold text-emerald-600 mb-8 font-mono">{docNumber}</p>
+        <p className="text-lg font-bold text-[#29496d] mb-8 font-mono">{docNumber}</p>
 
         <div ref={printRef} className="hidden">
           <div className="header">
@@ -90,7 +97,7 @@ export default function KeranjangPage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handlePrint}
-            className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 cursor-pointer"
+            className="px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#29496d] transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer"
           >
             🖨️ Cetak Bukti Pesanan
           </button>
@@ -113,13 +120,13 @@ export default function KeranjangPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center animate-fade-in">
-        <div className="text-7xl mb-6">🛒</div>
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center animate-fade-in flex flex-col items-center">
+        <ShoppingCart className="w-20 h-20 text-gray-300 mb-6" />
         <h1 className="text-2xl font-extrabold text-gray-900 mb-3">Keranjang Kosong</h1>
         <p className="text-gray-500 mb-8">Belum ada produk di keranjang. Yuk mulai belanja!</p>
         <Link
           href="/katalog"
-          className="inline-flex items-center px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200"
+          className="inline-flex items-center px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#29496d] transition-colors shadow-lg shadow-[#29496d]/20"
         >
           Jelajahi Katalog
           <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,7 +140,7 @@ export default function KeranjangPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 animate-fade-in">
-        🛒 Keranjang <span className="gradient-text">Belanja</span>
+        Keranjang <span className="gradient-text">Belanja</span>
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -144,8 +151,8 @@ export default function KeranjangPage() {
               key={item.productId}
               className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
             >
-              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-emerald-50 to-green-100 flex items-center justify-center text-3xl flex-shrink-0">
-                📦
+              <div className="w-20 h-20 rounded-xl bg-[#f8fafc] flex items-center justify-center text-gray-400 flex-shrink-0">
+                <Package className="w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
@@ -166,7 +173,7 @@ export default function KeranjangPage() {
                   +
                 </button>
               </div>
-              <p className="text-lg font-bold text-emerald-600 w-28 text-right">
+              <p className="text-lg font-bold text-[#29496d] w-28 text-right">
                 {formatCurrency(item.price * item.quantity)}
               </p>
               <button
@@ -182,10 +189,24 @@ export default function KeranjangPage() {
 
           <button
             onClick={clearCart}
-            className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors cursor-pointer"
+            className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors cursor-pointer flex items-center"
           >
-            🗑️ Kosongkan Keranjang
+            <Trash2 className="w-4 h-4 mr-2" /> Kosongkan Keranjang
           </button>
+
+          {/* Rekomendasi Produk */}
+          {recommendedProducts.length > 0 && !checkoutDone && (
+            <div className="mt-12 pt-8 border-t border-gray-100 animate-fade-in">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Mungkin Anda <span className="gradient-text">Suka</span>
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children">
+                {recommendedProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} viewMode="grid" />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Summary */}
@@ -200,7 +221,7 @@ export default function KeranjangPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Estimasi Ongkir</span>
-                <span className={`font-semibold ${shippingCost === 0 ? "text-emerald-600" : "text-gray-900"}`}>
+                <span className={`font-semibold ${shippingCost === 0 ? "text-[#29496d]" : "text-gray-900"}`}>
                   {shippingCost === 0 ? "GRATIS" : formatCurrency(shippingCost)}
                 </span>
               </div>
@@ -211,13 +232,13 @@ export default function KeranjangPage() {
               )}
               <div className="border-t border-gray-100 pt-3 flex justify-between">
                 <span className="font-bold text-gray-900">Total</span>
-                <span className="text-xl font-extrabold text-emerald-600">{formatCurrency(grandTotal)}</span>
+                <span className="text-xl font-extrabold text-[#29496d]">{formatCurrency(grandTotal)}</span>
               </div>
             </div>
 
             {/* Checkout Info */}
             <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm">
-              <p className="font-semibold text-gray-700 mb-2">📋 Info Pemesanan</p>
+              <p className="font-semibold text-gray-700 mb-2 flex items-center"><ClipboardList className="w-4 h-4 mr-2" /> Info Pemesanan</p>
               <p className="text-gray-500">Pemesan: <span className="text-gray-700 font-medium">{currentUser.name}</span></p>
               <p className="text-gray-500">Role: <span className="text-gray-700 font-medium">{ROLE_LABELS[currentUser.role]}</span></p>
               <p className="text-gray-500">No. Dok: <span className="text-gray-700 font-mono font-medium text-xs">{docNumber}</span></p>
@@ -226,7 +247,7 @@ export default function KeranjangPage() {
             {!showCheckout ? (
               <button
                 onClick={() => setShowCheckout(true)}
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-200 hover:shadow-emerald-300 cursor-pointer"
+                className="w-full py-3.5 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 hover:shadow-[#29496d]/25 cursor-pointer"
               >
                 Proses Pesanan
               </button>
@@ -234,25 +255,29 @@ export default function KeranjangPage() {
               <div className="space-y-3 animate-fade-in">
                 <input
                   placeholder="Alamat Pengiriman"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d]"
                   defaultValue="Jl. Contoh No. 123, Jakarta"
                 />
-                <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] cursor-pointer">
                   <option>Pengiriman Reguler (3-5 hari)</option>
                   <option>Pengiriman Express (1-2 hari)</option>
                   <option>Ambil Sendiri</option>
                 </select>
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-200 cursor-pointer"
+                  className="w-full py-3.5 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 cursor-pointer flex items-center justify-center"
                 >
-                  ✅ Konfirmasi Pesanan
+                  <CheckCircle className="w-5 h-5 mr-2" /> Konfirmasi Pesanan
                 </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
     </div>
   );
 }
+
+
+
