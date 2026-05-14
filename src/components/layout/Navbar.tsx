@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { ROLE_LABELS, ROLE_ICONS } from "@/types/user";
 import UserSwitcher from "./UserSwitcher";
+import { Home, Package, ShoppingCart, LayoutDashboard } from "lucide-react";
 
 export default function Navbar() {
   const { totalItems } = useCart();
@@ -101,10 +102,18 @@ export default function Navbar() {
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-xl animate-in slide-in-from-top duration-200">
             <div className="px-4 py-3 space-y-1">
-              <MobileNavLink href="/" onClick={() => setMenuOpen(false)}>🏠 Beranda</MobileNavLink>
-              <MobileNavLink href="/katalog" onClick={() => setMenuOpen(false)}>📦 Katalog</MobileNavLink>
-              <MobileNavLink href="/keranjang" onClick={() => setMenuOpen(false)}>🛒 Keranjang {totalItems > 0 && `(${totalItems})`}</MobileNavLink>
-              <MobileNavLink href="/dashboard" onClick={() => setMenuOpen(false)}>📊 Dashboard</MobileNavLink>
+              <MobileNavLink href="/" onClick={() => setMenuOpen(false)}>
+                <Home className="w-5 h-5" /> Beranda
+              </MobileNavLink>
+              <MobileNavLink href="/katalog" onClick={() => setMenuOpen(false)}>
+                <Package className="w-5 h-5" /> Katalog
+              </MobileNavLink>
+              <MobileNavLink href="/keranjang" onClick={() => setMenuOpen(false)}>
+                <ShoppingCart className="w-5 h-5" /> Keranjang {totalItems > 0 && `(${totalItems})`}
+              </MobileNavLink>
+              <MobileNavLink href="/dashboard" onClick={() => setMenuOpen(false)}>
+                <LayoutDashboard className="w-5 h-5" /> Dashboard
+              </MobileNavLink>
               <div className="pt-2 border-t border-gray-100">
                 <button
                   onClick={() => { setSwitcherOpen(true); setMenuOpen(false); }}
@@ -147,7 +156,7 @@ function MobileNavLink({ href, children, onClick }: { href: string; children: Re
     <Link
       href={href}
       onClick={onClick}
-      className="block px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:text-[#29496d] hover:bg-[#f5f7fb] transition-colors"
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:text-[#29496d] hover:bg-[#f5f7fb] transition-colors"
     >
       {children}
     </Link>
