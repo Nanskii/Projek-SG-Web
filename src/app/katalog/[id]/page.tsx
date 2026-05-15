@@ -95,7 +95,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             Produk <span className="gradient-text">Serupa</span>
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-            {relatedProducts.map((p) => (
+            {relatedProducts.map((p: { id: string; name: string; price: number; stock: number; imageUrl: string | null; category: { name: string } | null }) => (
               <Link key={p.id} href={`/katalog/${p.id}`} className="block">
                 <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
                   <div className="relative aspect-square bg-gray-100 overflow-hidden">
