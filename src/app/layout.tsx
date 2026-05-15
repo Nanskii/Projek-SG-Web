@@ -14,15 +14,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+import { getCurrentUser } from "@/app/actions/user";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="id" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <ClientLayout>{children}</ClientLayout>
+        <ClientLayout initialUser={user}>{children}</ClientLayout>
       </body>
     </html>
   );

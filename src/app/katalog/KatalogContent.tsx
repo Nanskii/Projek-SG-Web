@@ -1,14 +1,26 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { products } from "@/data/products";
-import { categories } from "@/data/categories";
-import ProductCard from "@/components/katalog/ProductCard";
+import { categories, categoryIconMap } from "@/data/categories";
 import { CategoryType } from "@/types/product";
-import { LayoutGrid, Search } from "lucide-react";
+import { LayoutGrid, Search, Package } from "lucide-react";
+import Link from "next/link";
+import { useCart } from "@/context/CartContext";
+import { formatCurrency } from "@/lib/utils";
 
-type SortOption = "default" | "price-asc" | "price-desc" | "rating" | "newest";
+type SortOption = "default" | "price-asc" | "price-desc" | "newest";
+
+interface DbProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  imageUrl: string | null;
+  stock: number;
+  categoryId: string | null;
+  category: { id: string; name: string } | null;
+}
 
 export default function KatalogContent() {
   const searchParams = useSearchParams();
@@ -19,6 +31,22 @@ export default function KatalogContent() {
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]);
+  const [products, setProducts] = useState<DbProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (catFromUrl) setSelectedCategory(catFromUrl);
+  }, [catFromUrl]);
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -28,13 +56,12 @@ export default function KatalogContent() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q))
+          (p.description && p.description.toLowerCase().includes(q))
       );
     }
 
     if (selectedCategory !== "all") {
-      result = result.filter((p) => p.category === selectedCategory);
+      result = result.filter((p) => p.category?.name === selectedCategory);
     }
 
     result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
@@ -46,16 +73,22 @@ export default function KatalogContent() {
       case "price-desc":
         result.sort((a, b) => b.price - a.price);
         break;
-      case "rating":
-        result.sort((a, b) => b.rating - a.rating);
-        break;
       case "newest":
         result.sort((a, b) => b.id.localeCompare(a.id));
         break;
     }
 
     return result;
-  }, [search, selectedCategory, sortBy, priceRange]);
+  }, [search, selectedCategory, sortBy, priceRange, products]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-20 text-center flex flex-col items-center">
+        <Package className="w-12 h-12 text-[#29496d] animate-pulse mb-4" />
+        <p className="text-gray-400">Memuat katalog...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -113,7 +146,9 @@ export default function KatalogContent() {
                       }`}
                   >
                     <span className="flex items-center"><cat.icon className="w-4 h-4 mr-2" /> {cat.name}</span>
-                    <span className="text-xs text-gray-400">{cat.count}</span>
+                    <span className="text-xs text-gray-400">
+                      {products.filter((p) => p.category?.name === cat.id).length}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -168,7 +203,6 @@ export default function KatalogContent() {
                 <option value="default">Urutkan: Default</option>
                 <option value="price-asc">Harga: Rendah → Tinggi</option>
                 <option value="price-desc">Harga: Tinggi → Rendah</option>
-                <option value="rating">Rating Tertinggi</option>
                 <option value="newest">Terbaru</option>
               </select>
 
@@ -205,7 +239,7 @@ export default function KatalogContent() {
               }
             >
               {filtered.map((product) => (
-                <ProductCard key={product.id} product={product} viewMode={viewMode} />
+                <CatalogProductCard key={product.id} product={product} viewMode={viewMode} />
               ))}
             </div>
           ) : (
@@ -221,5 +255,77 @@ export default function KatalogContent() {
   );
 }
 
+function CatalogProductCard({ product, viewMode }: { product: DbProduct; viewMode: "grid" | "list" }) {
+  const { addItem } = useCart();
+  const catSlug = product.category?.name || "";
+  const Icon = categoryIconMap[catSlug] || Package;
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.imageUrl || "",
+      quantity: 1,
+      unit: "pcs",
+    });
+  };
 
+  if (viewMode === "list") {
+    return (
+      <Link href={`/katalog/${product.id}`} className="block">
+        <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-lg hover:shadow-[#29496d]/10 transition-all duration-300 p-4 flex gap-4">
+          <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+            <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300">
+              <Icon className="w-10 h-10 sm:w-16 sm:h-16" />
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col justify-between min-w-0">
+            <div>
+              <h3 className="font-semibold text-gray-900 group-hover:text-[#29496d] transition-colors truncate">{product.name}</h3>
+              <p className="text-sm text-gray-500 mt-1 line-clamp-2">{product.description}</p>
+            </div>
+            <div className="flex items-center justify-between mt-3">
+              <div>
+                <p className="text-lg font-bold text-[#29496d]">{formatCurrency(product.price)}</p>
+                <p className="text-xs text-gray-400">Stok: {product.stock}</p>
+              </div>
+              <button onClick={handleAddToCart} className="px-4 py-2 bg-[#29496d] hover:bg-[#203a59] text-white text-sm font-medium rounded-xl transition-colors shadow-md cursor-pointer">
+                + Keranjang
+              </button>
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href={`/katalog/${product.id}`} className="block">
+      <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
+        <div className="relative aspect-square bg-gray-100 overflow-hidden">
+          <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
+            <Icon className="w-20 h-20" />
+          </div>
+          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <button onClick={handleAddToCart} className="w-10 h-10 bg-[#29496d] hover:bg-[#203a59] text-white rounded-full flex items-center justify-center shadow-lg cursor-pointer">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div className="p-4 flex-1 flex flex-col">
+          <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{catSlug.replace("-", " ")}</p>
+          <h3 className="font-semibold text-gray-900 mt-1 group-hover:text-[#29496d] transition-colors line-clamp-2">{product.name}</h3>
+          <div className="mt-auto pt-3">
+            <p className="text-lg font-bold text-[#29496d]">{formatCurrency(product.price)}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Stok: {product.stock}</p>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}

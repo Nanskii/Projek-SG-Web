@@ -9,3 +9,13 @@ export const categories: Category[] = [
   { id: "fashion", name: "Fashion & Pakaian", icon: Shirt, count: 2 },
   { id: "bangunan", name: "Bahan Bangunan", icon: Hammer, count: 3 },
 ];
+
+// Icon map by category slug for use in Server Components (no JSX)
+export const categoryIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  sembako: Package,
+  atk: Paperclip,
+  "rumah-tangga": Home,
+  elektronik: Smartphone,
+  fashion: Shirt,
+  bangunan: Hammer,
+};

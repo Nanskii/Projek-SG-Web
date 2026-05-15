@@ -1,16 +1,21 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
-import { products } from "@/data/products";
-import { categories } from "@/data/categories";
-import ProductCard from "@/components/katalog/ProductCard";
+import prisma from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
-import { Search, FileText, Zap, Users, LayoutDashboard, ShoppingCart } from "lucide-react";
+import { Search, FileText, Zap, Users, LayoutDashboard, ShoppingCart, Package, Paperclip, Home, Smartphone, Shirt, Hammer } from "lucide-react";
+import { categoryIconMap } from "@/data/categories";
 
-export default function HomePage() {
-  const bestSellers = products.filter((p) => p.isBestSeller).slice(0, 4);
-  const promoProducts = products.filter((p) => p.isPromo).slice(0, 4);
+export default async function HomePage() {
+  const products = await prisma.product.findMany({
+    include: { category: true }
+  });
+  
+  const categories = await prisma.category.findMany({
+    include: { _count: { select: { products: true } } }
+  });
+
+  const bestSellers = products.slice(0, 4);
+  const promoProducts = products.slice(4, 8);
 
   return (
     <div>
@@ -61,7 +66,7 @@ export default function HomePage() {
       {/* Stats */}
       <section className="relative -mt-12 z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 sm:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 animate-fade-in">
-          <StatItem value="24+" label="Produk Tersedia" />
+          <StatItem value={`${products.length}+`} label="Produk Tersedia" />
           <StatItem value="4" label="Tipe Pengguna" />
           <StatItem value="100%" label="Terdokumentasi" />
           <StatItem value="< 3s" label="Load Time" />
@@ -79,21 +84,24 @@ export default function HomePage() {
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 stagger-children">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/katalog?cat=${cat.id}`}
-              className="group bg-white rounded-2xl border border-gray-100 p-5 text-center hover:border-[#a3b0cc] hover:shadow-lg hover:shadow-[#29496d]/10 transition-all duration-300 hover:-translate-y-1"
-            >
-              <div className="flex justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
-                <cat.icon className="w-10 h-10 text-[#29496d]" />
-              </div>
-              <h3 className="text-sm font-semibold text-gray-800 group-hover:text-[#29496d] transition-colors">
-                {cat.name}
-              </h3>
-              <p className="text-xs text-gray-400 mt-1">{cat.count} produk</p>
-            </Link>
-          ))}
+          {categories.map((cat) => {
+            const Icon = categoryIconMap[cat.name] || Package;
+            return (
+              <Link
+                key={cat.id}
+                href={`/katalog?cat=${cat.name}`}
+                className="group bg-white rounded-2xl border border-gray-100 p-5 text-center hover:border-[#a3b0cc] hover:shadow-lg hover:shadow-[#29496d]/10 transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="flex justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Icon className="w-10 h-10 text-[#29496d]" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-800 group-hover:text-[#29496d] transition-colors capitalize">
+                  {cat.name.replace("-", " ")}
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">{cat._count.products} produk</p>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -103,9 +111,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-10">
             <div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-                Produk <span className="gradient-text">Terlaris</span>
+                Produk <span className="gradient-text">Terbaru</span>
               </h2>
-              <p className="mt-2 text-gray-500">Paling banyak dipesan minggu ini</p>
+              <p className="mt-2 text-gray-500">Paling banyak dicari minggu ini</p>
             </div>
             <Link
               href="/katalog"
@@ -118,21 +126,40 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-            {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {bestSellers.map((product) => {
+              const CatIcon = categoryIconMap[product.category?.name || ""] || Package;
+              return (
+                <Link key={product.id} href={`/katalog/${product.id}`} className="block">
+                  <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
+                    <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                      <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
+                        <CatIcon className="w-20 h-20" />
+                      </div>
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{product.category?.name?.replace("-", " ")}</p>
+                      <h3 className="font-semibold text-gray-900 mt-1 group-hover:text-[#29496d] transition-colors line-clamp-2">{product.name}</h3>
+                      <div className="mt-auto pt-3">
+                        <p className="text-lg font-bold text-[#29496d]">{formatCurrency(product.price)}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Stok: {product.stock}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Promo Section */}
+      {/* More Products */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <div className="flex items-center justify-between mb-10">
           <div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">
-              Promo <span className="text-red-500">Spesial</span>
+              Produk <span className="text-red-500">Lainnya</span>
             </h2>
-            <p className="mt-2 text-gray-500">Hemat lebih banyak dengan promo terbaik</p>
+            <p className="mt-2 text-gray-500">Jelajahi lebih banyak pilihan</p>
           </div>
           <Link
             href="/katalog"
@@ -145,9 +172,28 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-          {promoProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {promoProducts.map((product) => {
+            const CatIcon = categoryIconMap[product.category?.name || ""] || Package;
+            return (
+              <Link key={product.id} href={`/katalog/${product.id}`} className="block">
+                <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
+                  <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                    <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
+                      <CatIcon className="w-20 h-20" />
+                    </div>
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{product.category?.name?.replace("-", " ")}</p>
+                    <h3 className="font-semibold text-gray-900 mt-1 group-hover:text-[#29496d] transition-colors line-clamp-2">{product.name}</h3>
+                    <div className="mt-auto pt-3">
+                      <p className="text-lg font-bold text-[#29496d]">{formatCurrency(product.price)}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Stok: {product.stock}</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

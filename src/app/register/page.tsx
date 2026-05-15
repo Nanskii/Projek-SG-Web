@@ -1,19 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useActionState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ROLE_LABELS, ROLE_ICONS, UserRole } from "@/types/user";
+import { signup } from "@/app/actions/auth";
+import { AlertCircle } from "lucide-react";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<UserRole>("household");
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulasi - langsung redirect ke login
-    router.push("/login");
-  };
+  const [state, formAction, isPending] = useActionState(signup, undefined);
 
   const roles: UserRole[] = ["enterprise", "umkm", "household", "distributor"];
 
@@ -30,12 +25,21 @@ export default function RegisterPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleRegister} className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 space-y-5 animate-slide-up">
+        <form action={formAction} className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 space-y-5 animate-slide-up">
+          {state?.error && (
+            <div className="p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-3 text-sm font-medium">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p>{state.error}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-1 block">Nama Lengkap</label>
               <input
                 type="text"
+                name="name"
+                required
                 placeholder="Nama Anda"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
               />
@@ -44,6 +48,8 @@ export default function RegisterPage() {
               <label className="text-sm font-semibold text-gray-700 mb-1 block">Email</label>
               <input
                 type="email"
+                name="email"
+                required
                 placeholder="nama@email.com"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
               />
@@ -54,6 +60,9 @@ export default function RegisterPage() {
             <label className="text-sm font-semibold text-gray-700 mb-1 block">Password</label>
             <input
               type="password"
+              name="password"
+              required
+              minLength={8}
               placeholder="Minimal 8 karakter"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
             />
@@ -63,7 +72,8 @@ export default function RegisterPage() {
             <label className="text-sm font-semibold text-gray-700 mb-1 block">Nama Perusahaan / Organisasi</label>
             <input
               type="text"
-              placeholder="Opsional"
+              name="company"
+              placeholder="Opsional (Isi jika UMKM/Distributor)"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] bg-gray-50"
             />
           </div>
@@ -71,6 +81,7 @@ export default function RegisterPage() {
           {/* Role Selection */}
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-2 block">Tipe Pengguna</label>
+            <input type="hidden" name="role" value={selectedRole} />
             <div className="grid grid-cols-2 gap-3">
               {roles.map((role) => (
                 <button
@@ -83,7 +94,12 @@ export default function RegisterPage() {
                       : "border-gray-100 hover:border-[#a3b0cc]"
                   }`}
                 >
-                  <span className="text-xl">{ROLE_ICONS[role]}</span>
+                  <span className="text-xl">
+                    {(() => {
+                      const RoleIcon = ROLE_ICONS[role];
+                      return <RoleIcon className="w-5 h-5" />;
+                    })()}
+                  </span>
                   <span className={`text-sm font-semibold ${selectedRole === role ? "text-[#203a59]" : "text-gray-600"}`}>
                     {ROLE_LABELS[role]}
                   </span>
@@ -94,14 +110,23 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer"
+            disabled={isPending}
+            className={`w-full py-3.5 text-white font-bold rounded-xl transition-colors shadow-lg cursor-pointer flex items-center justify-center gap-2 ${
+              isPending ? "bg-gray-400 cursor-not-allowed shadow-none" : "bg-[#29496d] hover:bg-[#203a59] shadow-[#29496d]/20"
+            }`}
           >
-            Daftar Sekarang
+            {isPending ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memproses...
+              </>
+            ) : (
+              "Daftar Sekarang"
+            )}
           </button>
-
-          <p className="text-xs text-gray-400 text-center">
-            ℹ️ Ini adalah form simulasi. Tidak ada data yang disimpan ke server.
-          </p>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
@@ -114,7 +139,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-
-
-

@@ -1,29 +1,43 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { formatCurrency, generateDocumentNumber } from "@/lib/utils";
 import { ROLE_LABELS } from "@/types/user";
 import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle } from "lucide-react";
-import { products } from "@/data/products";
-import ProductCard from "@/components/katalog/ProductCard";
+import { categoryIconMap } from "@/data/categories";
+
+interface RecProduct {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  category: { name: string } | null;
+}
 
 export default function KeranjangPage() {
-  const { items, removeItem, updateQuantity, clearCart, totalAmount } = useCart();
+  const { items, addItem, removeItem, updateQuantity, clearCart, totalAmount } = useCart();
   const { currentUser } = useUser();
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutDone, setCheckoutDone] = useState(false);
-  const [docNumber] = useState(() => generateDocumentNumber(currentUser.name.substring(0, 3).toUpperCase()));
+  const [docNumber] = useState(() => generateDocumentNumber(currentUser?.name?.substring(0, 3).toUpperCase() || "USR"));
   const printRef = useRef<HTMLDivElement>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<RecProduct[]>([]);
 
   const shippingCost = totalAmount > 500000 ? 0 : 15000;
   const grandTotal = totalAmount + shippingCost;
 
-  const recommendedProducts = products
-    .filter((p) => !items.find((i) => i.productId === p.id) && (p.isBestSeller || p.isPromo))
-    .slice(0, 4);
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data: RecProduct[]) => {
+        const filtered = data.filter((p) => !items.find((i) => i.productId === p.id)).slice(0, 4);
+        setRecommendedProducts(filtered);
+      })
+      .catch(() => {});
+  }, [items]);
 
   const handleCheckout = () => {
     setCheckoutDone(true);
@@ -71,7 +85,7 @@ export default function KeranjangPage() {
           <div className="header">
             <h1>Warunge — Ringkasan Pesanan</h1>
             <p>Dokumen: {docNumber}</p>
-            <p>Pengguna: {currentUser.name} ({ROLE_LABELS[currentUser.role]})</p>
+            <p>Pengguna: {currentUser?.name} ({ROLE_LABELS[currentUser?.role || "household"]})</p>
             <p>Tanggal: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
           </div>
           <table>
@@ -151,13 +165,15 @@ export default function KeranjangPage() {
               key={item.productId}
               className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
             >
-              <div className="w-20 h-20 rounded-xl bg-[#f8fafc] flex items-center justify-center text-gray-400 flex-shrink-0">
-                <Package className="w-8 h-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
-                <p className="text-sm text-gray-400">{formatCurrency(item.price)} / {item.unit}</p>
-              </div>
+              <Link href={`/katalog/${item.productId}`} className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="w-20 h-20 rounded-xl bg-[#f8fafc] flex items-center justify-center text-gray-400 flex-shrink-0">
+                  <Package className="w-8 h-8" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate hover:text-[#29496d] transition-colors">{item.name}</h3>
+                  <p className="text-sm text-gray-400">{formatCurrency(item.price)} / {item.unit}</p>
+                </div>
+              </Link>
               <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
                 <button
                   onClick={() => updateQuantity(item.productId, item.quantity - 1)}
@@ -201,9 +217,45 @@ export default function KeranjangPage() {
                 Mungkin Anda <span className="gradient-text">Suka</span>
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children">
-                {recommendedProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} viewMode="grid" />
-                ))}
+                {recommendedProducts.map((p) => {
+                  const CatIcon = categoryIconMap[p.category?.name || ""] || Package;
+                  return (
+                    <div key={p.id} className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
+                      <Link href={`/katalog/${p.id}`}>
+                        <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                          <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
+                            <CatIcon className="w-16 h-16" />
+                          </div>
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col">
+                          <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{p.category?.name?.replace("-", " ")}</p>
+                          <h3 className="font-semibold text-gray-900 text-sm mt-1 group-hover:text-[#29496d] transition-colors line-clamp-2">{p.name}</h3>
+                          <div className="mt-auto pt-2">
+                            <p className="text-base font-bold text-[#29496d]">{formatCurrency(p.price)}</p>
+                            <p className="text-xs text-gray-400">Stok: {p.stock}</p>
+                          </div>
+                        </div>
+                      </Link>
+                      <div className="px-3 pb-3">
+                        <button
+                          onClick={() => {
+                            addItem({
+                              productId: p.id,
+                              name: p.name,
+                              price: p.price,
+                              image: "",
+                              quantity: 1,
+                              unit: "pcs",
+                            });
+                          }}
+                          className="w-full py-2 bg-[#29496d] hover:bg-[#203a59] text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-md shadow-[#29496d]/20"
+                        >
+                          + Keranjang
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -239,8 +291,8 @@ export default function KeranjangPage() {
             {/* Checkout Info */}
             <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm">
               <p className="font-semibold text-gray-700 mb-2 flex items-center"><ClipboardList className="w-4 h-4 mr-2" /> Info Pemesanan</p>
-              <p className="text-gray-500">Pemesan: <span className="text-gray-700 font-medium">{currentUser.name}</span></p>
-              <p className="text-gray-500">Role: <span className="text-gray-700 font-medium">{ROLE_LABELS[currentUser.role]}</span></p>
+              <p className="text-gray-500">Pemesan: <span className="text-gray-700 font-medium">{currentUser?.name || "Guest"}</span></p>
+              <p className="text-gray-500">Role: <span className="text-gray-700 font-medium">{ROLE_LABELS[currentUser?.role || "household"]}</span></p>
               <p className="text-gray-500">No. Dok: <span className="text-gray-700 font-mono font-medium text-xs">{docNumber}</span></p>
             </div>
 

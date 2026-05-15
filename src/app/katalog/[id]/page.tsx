@@ -1,21 +1,18 @@
-"use client";
-
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import React from "react";
 import Link from "next/link";
-import { products } from "@/data/products";
-import { useCart } from "@/context/CartContext";
-import { formatCurrency, calculateDiscount } from "@/lib/utils";
-import ProductCard from "@/components/katalog/ProductCard";
-import { categories } from "@/data/categories";
+import prisma from "@/lib/prisma";
+import { formatCurrency } from "@/lib/utils";
 import { Frown, ArrowLeft, Flame, Package } from "lucide-react";
+import { categoryIconMap } from "@/data/categories";
+import AddToCartButton from "./AddToCartButton";
 
-export default function ProductDetailPage() {
-  const params = useParams();
-  const product = products.find((p) => p.id === params.id);
-  const { addItem } = useCart();
-  const [quantity, setQuantity] = useState(1);
-  const [addedToCart, setAddedToCart] = useState(false);
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { category: true },
+  });
 
   if (!product) {
     return (
@@ -29,24 +26,14 @@ export default function ProductDetailPage() {
     );
   }
 
-  const discount = product.originalPrice ? calculateDiscount(product.originalPrice, product.price) : 0;
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const relatedProducts = await prisma.product.findMany({
+    where: { categoryId: product.categoryId, NOT: { id: product.id } },
+    include: { category: true },
+    take: 4,
+  });
 
-  const handleAddToCart = () => {
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity,
-      unit: product.unit,
-    });
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
-  };
-
+  const catSlug = product.category?.name || "";
+  const Icon = categoryIconMap[catSlug] || Package;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -63,52 +50,17 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16 animate-slide-up">
         {/* Image */}
         <div className="relative aspect-square bg-[#f8fafc] rounded-3xl overflow-hidden flex items-center justify-center text-gray-300">
-          {(() => {
-            const cat = categories.find(c => c.id === product.category);
-            const Icon = cat?.icon || Package;
-            return <Icon className="w-32 h-32 sm:w-48 sm:h-48" />;
-          })()}
-          {/* Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2">
-            {product.isPromo && discount > 0 && (
-              <span className="px-3 py-1.5 bg-red-500 text-white text-sm font-bold rounded-xl shadow-lg">
-                -{discount}%
-              </span>
-            )}
-            {product.isBestSeller && (
-              <span className="flex items-center px-3 py-1.5 bg-amber-400 text-amber-900 text-sm font-bold rounded-xl shadow-lg">
-                <Flame className="w-4 h-4 mr-1" /> Best Seller
-              </span>
-            )}
-          </div>
+          <Icon className="w-32 h-32 sm:w-48 sm:h-48" />
         </div>
 
         {/* Info */}
         <div className="flex flex-col">
           <div className="mb-2">
             <span className="text-sm text-[#29496d] font-semibold uppercase tracking-wider">
-              {product.supplier}
+              {product.category?.name?.replace("-", " ") || "Warunge"}
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">{product.name}</h1>
-
-          {/* Rating */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  className={`w-5 h-5 ${star <= Math.floor(product.rating) ? "text-amber-400" : "text-gray-200"}`}
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-sm font-semibold text-gray-700">{product.rating}</span>
-            <span className="text-sm text-gray-400">({product.reviewCount} ulasan)</span>
-          </div>
 
           {/* Price */}
           <div className="bg-[#f5f7fb] rounded-2xl p-5 mb-6">
@@ -116,67 +68,23 @@ export default function ProductDetailPage() {
               <span className="text-3xl font-extrabold text-[#29496d]">
                 {formatCurrency(product.price)}
               </span>
-              {product.originalPrice && (
-                <span className="text-lg text-gray-400 line-through mb-0.5">
-                  {formatCurrency(product.originalPrice)}
-                </span>
-              )}
             </div>
             <p className="text-sm text-[#203a59] mt-1">
-              per {product.unit} · Stok tersedia: <span className="font-semibold">{product.stock}</span>
+              Stok tersedia: <span className="font-semibold">{product.stock}</span>
             </p>
           </div>
 
           {/* Description */}
           <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {product.tags.map((tag) => (
-              <span
-                key={tag}
-                className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Quantity & Add to Cart */}
-          <div className="flex items-center gap-4 mt-auto">
-            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer text-xl"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                min={1}
-                max={product.stock}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(product.stock, Number(e.target.value))))}
-                className="w-16 h-11 text-center text-sm font-semibold border-x border-gray-200 focus:outline-none"
-              />
-              <button
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer text-xl"
-              >
-                +
-              </button>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              className={`flex-1 py-3 px-6 rounded-xl font-bold text-white transition-all shadow-lg cursor-pointer ${
-                addedToCart
-                  ? "bg-[#29496d] shadow-[#29496d]/20"
-                  : "bg-[#29496d] hover:bg-[#29496d] shadow-[#29496d]/20 hover:shadow-[#29496d]/25"
-              }`}
-            >
-              {addedToCart ? "✓ Ditambahkan!" : `Tambah ke Keranjang — ${formatCurrency(product.price * quantity)}`}
-            </button>
-          </div>
+          {/* Add to Cart (Client Component) */}
+          <AddToCartButton product={{
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.imageUrl || "",
+            stock: product.stock,
+          }} />
         </div>
       </div>
 
@@ -188,7 +96,26 @@ export default function ProductDetailPage() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
             {relatedProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <Link key={p.id} href={`/katalog/${p.id}`} className="block">
+                <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
+                  <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                    <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
+                      {(() => {
+                        const RIcon = categoryIconMap[p.category?.name || ""] || Package;
+                        return <RIcon className="w-20 h-20" />;
+                      })()}
+                    </div>
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{p.category?.name?.replace("-", " ")}</p>
+                    <h3 className="font-semibold text-gray-900 mt-1 group-hover:text-[#29496d] transition-colors line-clamp-2">{p.name}</h3>
+                    <div className="mt-auto pt-3">
+                      <p className="text-lg font-bold text-[#29496d]">{formatCurrency(p.price)}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Stok: {p.stock}</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -196,5 +123,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-
