@@ -84,7 +84,7 @@ export default async function HomePage() {
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 stagger-children">
-          {categories.map((cat) => {
+          {categories.map((cat: { id: string; name: string; _count: { products: number } }) => {
             const Icon = categoryIconMap[cat.name] || Package;
             return (
               <Link
@@ -126,7 +126,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-            {bestSellers.map((product) => {
+            {bestSellers.map((product: { id: string; name: string; price: number; stock: number; category: { name: string } | null }) => {
               const CatIcon = categoryIconMap[product.category?.name || ""] || Package;
               return (
                 <Link key={product.id} href={`/katalog/${product.id}`} className="block">
@@ -172,7 +172,7 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-          {promoProducts.map((product) => {
+          {promoProducts.map((product: { id: string; name: string; price: number; stock: number; category: { name: string } | null }) => {
             const CatIcon = categoryIconMap[product.category?.name || ""] || Package;
             return (
               <Link key={product.id} href={`/katalog/${product.id}`} className="block">
