@@ -11,13 +11,50 @@ import Link from "next/link";
 import { 
   Wallet, Package, CheckCircle, ShoppingCart, LayoutDashboard, BarChart3, 
   Zap, Bell, Tag, Truck, ClipboardCheck, FileSpreadsheet, Download, 
-  RefreshCcw, DollarSign, LineChart, History, Smartphone, Wheat, Store, Info, ClipboardList
+  RefreshCcw, DollarSign, LineChart, History, Smartphone, Wheat, Store, Info, ClipboardList, LogIn
 } from "lucide-react";
 
 export default function DashboardPage() {
   const { currentUser } = useUser();
   const { totalItems, totalAmount } = useCart();
   const [activeTab, setActiveTab] = useState<"overview" | "orders" | "profile">("overview");
+
+  if (!currentUser) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-20 text-center animate-fade-in">
+        <div className="bg-white rounded-3xl border border-gray-100 p-10 shadow-sm">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#f0f4fa] flex items-center justify-center">
+            <LayoutDashboard className="w-10 h-10 text-[#29496d]" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Akses Dashboard</h1>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8">
+            Silakan masuk ke akun Anda untuk mengakses dashboard, melihat riwayat pesanan, dan mengelola profil Anda.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/login"
+              className="w-full py-3.5 bg-[#29496d] hover:bg-[#203a59] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-5 h-5" />
+              Masuk Sekarang
+            </Link>
+            <Link
+              href="/register"
+              className="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              Belum punya akun? Daftar
+            </Link>
+            <Link
+              href="/"
+              className="text-sm text-gray-400 hover:text-gray-600 transition-colors mt-1"
+            >
+              Kembali ke Beranda
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const userOrders = sampleOrders.filter((o) => o.userId === currentUser.id);
   const totalSpent = userOrders.reduce((sum, o) => sum + o.totalAmount, 0);

@@ -25,7 +25,7 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
       name: prismaUser.name || "Pengguna",
       email: prismaUser.email,
       role: prismaUser.role as any,
-      avatarUrl: prismaUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(prismaUser.name || "Pengguna")}&background=random`,
+      avatar: prismaUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(prismaUser.name || "Pengguna")}&background=random`,
       company: prismaUser.company || undefined,
     };
   }

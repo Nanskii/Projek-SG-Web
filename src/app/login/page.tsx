@@ -26,7 +26,7 @@ export default function LoginPage() {
               name: data.prismaUser.name || "Pengguna",
               email: data.prismaUser.email,
               role: data.prismaUser.role as any,
-              avatarUrl: data.prismaUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.prismaUser.name || "Pengguna")}&background=random`,
+              avatar: data.prismaUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.prismaUser.name || "Pengguna")}&background=random`,
               company: data.prismaUser.company || undefined,
             });
           }

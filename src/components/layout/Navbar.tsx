@@ -44,7 +44,7 @@ export default function Navbar() {
                   </span>
                 )}
               </NavLink>
-              {currentUser && <NavLink href="/dashboard">Dashboard</NavLink>}
+              <NavLink href="/dashboard">Dashboard</NavLink>
             </div>
 
             {/* User Profile & Actions */}
@@ -115,11 +115,9 @@ export default function Navbar() {
               <MobileNavLink href="/keranjang" onClick={() => setMenuOpen(false)}>
                 <ShoppingCart className="w-5 h-5" /> Keranjang {totalItems > 0 && `(${totalItems})`}
               </MobileNavLink>
-              {currentUser && (
-                <MobileNavLink href="/dashboard" onClick={() => setMenuOpen(false)}>
-                  <LayoutDashboard className="w-5 h-5" /> Dashboard
-                </MobileNavLink>
-              )}
+              <MobileNavLink href="/dashboard" onClick={() => setMenuOpen(false)}>
+                <LayoutDashboard className="w-5 h-5" /> Dashboard
+              </MobileNavLink>
               
               <div className="pt-2 mt-2 border-t border-gray-100">
                 {currentUser ? (
