@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { ROLE_LABELS, ROLE_ICONS } from "@/types/user";
-import { Home, Package, ShoppingCart, LayoutDashboard, LogOut, LogIn } from "lucide-react";
+import { Home, Package, ShoppingCart, LayoutDashboard, LogOut, LogIn, ShieldCheck } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 
 export default function Navbar() {
@@ -45,6 +45,11 @@ export default function Navbar() {
                 )}
               </NavLink>
               <NavLink href="/dashboard">Dashboard</NavLink>
+              {currentUser?.role === "admin" && (
+                <NavLink href="/admin">
+                  <ShieldCheck className="w-4 h-4 mr-1" /> Admin
+                </NavLink>
+              )}
             </div>
 
             {/* User Profile & Actions */}
@@ -118,6 +123,11 @@ export default function Navbar() {
               <MobileNavLink href="/dashboard" onClick={() => setMenuOpen(false)}>
                 <LayoutDashboard className="w-5 h-5" /> Dashboard
               </MobileNavLink>
+              {currentUser?.role === "admin" && (
+                <MobileNavLink href="/admin" onClick={() => setMenuOpen(false)}>
+                  <ShieldCheck className="w-5 h-5" /> Admin Panel
+                </MobileNavLink>
+              )}
               
               <div className="pt-2 mt-2 border-t border-gray-100">
                 {currentUser ? (

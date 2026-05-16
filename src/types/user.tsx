@@ -1,7 +1,7 @@
 import React from "react";
-import { Building2, Store, Home, Truck } from "lucide-react";
+import { Building2, Store, Home, Truck, ShieldCheck } from "lucide-react";
 
-export type UserRole = "enterprise" | "umkm" | "household" | "distributor";
+export type UserRole = "enterprise" | "umkm" | "household" | "distributor" | "admin";
 
 export interface UserProfile {
   id: string;
@@ -17,6 +17,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   umkm: "Pemilik UMKM",
   household: "Ibu Rumah Tangga",
   distributor: "Distributor",
+  admin: "Administrator",
 };
 
 export const ROLE_ICONS: Record<UserRole, React.ComponentType<{ className?: string }>> = {
@@ -24,4 +25,6 @@ export const ROLE_ICONS: Record<UserRole, React.ComponentType<{ className?: stri
   umkm: Store,
   household: Home,
   distributor: Truck,
+  admin: ShieldCheck,
 };
+

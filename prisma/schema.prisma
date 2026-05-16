@@ -62,16 +62,17 @@ model CartItem {
 }
 
 model Order {
-  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String      @db.Uuid
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status        String      @default("PENDING") // PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
-  totalAmount   Int
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String      @db.Uuid
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          String      @default("BELUM_BAYAR") // BELUM_BAYAR, SUDAH_BAYAR, DIPROSES, DIANTAR, SIAP_DIAMBIL, SELESAI
+  totalAmount     Int
   shippingAddress String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  deliveryMethod  String      @default("DELIVERY") // DELIVERY or PICKUP
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  items         OrderItem[]
+  items           OrderItem[]
 }
 
 model OrderItem {

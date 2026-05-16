@@ -6,7 +6,8 @@ import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { formatCurrency, generateDocumentNumber } from "@/lib/utils";
 import { ROLE_LABELS } from "@/types/user";
-import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle } from "lucide-react";
+import { DeliveryMethod } from "@/types/order";
+import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle, Loader2, MapPin, Truck, Store } from "lucide-react";
 import { categoryIconMap } from "@/data/categories";
 
 interface RecProduct {
@@ -22,11 +23,16 @@ export default function KeranjangPage() {
   const { currentUser } = useUser();
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutDone, setCheckoutDone] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [shippingAddress, setShippingAddress] = useState("Jl. Contoh No. 123, Jakarta");
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("DELIVERY");
   const [docNumber] = useState(() => generateDocumentNumber(currentUser?.name?.substring(0, 3).toUpperCase() || "USR"));
   const printRef = useRef<HTMLDivElement>(null);
   const [recommendedProducts, setRecommendedProducts] = useState<RecProduct[]>([]);
 
-  const shippingCost = totalAmount > 500000 ? 0 : 15000;
+  const shippingCost = deliveryMethod === "PICKUP" ? 0 : totalAmount > 500000 ? 0 : 15000;
   const grandTotal = totalAmount + shippingCost;
 
   useEffect(() => {
@@ -39,8 +45,46 @@ export default function KeranjangPage() {
       .catch(() => {});
   }, [items]);
 
-  const handleCheckout = () => {
-    setCheckoutDone(true);
+  const handleCheckout = async () => {
+    if (!currentUser) {
+      setCheckoutError("Silakan login terlebih dahulu");
+      return;
+    }
+
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          totalAmount: grandTotal,
+          shippingAddress: deliveryMethod === "DELIVERY" ? shippingAddress : null,
+          deliveryMethod,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        setCheckoutError(data.error);
+        return;
+      }
+
+      setOrderId(data.orderId);
+      setCheckoutDone(true);
+      clearCart();
+    } catch {
+      setCheckoutError("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   const handlePrint = () => {
@@ -56,8 +100,8 @@ export default function KeranjangPage() {
                 table { width: 100%; border-collapse: collapse; margin: 20px 0; }
                 th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
                 th { background: #f8fafc; font-weight: 600; }
-                .header { border-bottom: 3px solid #16a34a; padding-bottom: 16px; margin-bottom: 20px; }
-                .total { font-size: 1.25rem; font-weight: 700; color: #16a34a; }
+                .header { border-bottom: 3px solid #29496d; padding-bottom: 16px; margin-bottom: 20px; }
+                .total { font-size: 1.25rem; font-weight: 700; color: #29496d; }
               </style>
             </head>
             <body>${content}</body>
@@ -73,13 +117,16 @@ export default function KeranjangPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center animate-fade-in">
         <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#e7eff7] flex items-center justify-center">
-          <svg className="w-10 h-10 text-[#29496d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          <CheckCircle className="w-10 h-10 text-[#29496d]" />
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Pesanan Berhasil! 🎉</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Pesanan Berhasil!</h1>
+        <p className="text-gray-500 mb-1">Pesanan Anda telah dibuat dengan status <span className="font-semibold text-red-600">Belum Bayar</span></p>
+        {orderId && (
+          <p className="text-sm text-gray-400 mb-2">Order ID: <span className="font-mono text-gray-600">{orderId.slice(0, 8)}...</span></p>
+        )}
         <p className="text-gray-500 mb-2">Nomor Dokumen:</p>
-        <p className="text-lg font-bold text-[#29496d] mb-8 font-mono">{docNumber}</p>
+        <p className="text-lg font-bold text-[#29496d] mb-2 font-mono">{docNumber}</p>
+        <p className="text-sm text-gray-400 mb-8">Admin akan memproses pesanan Anda. Cek status pesanan di Dashboard.</p>
 
         <div ref={printRef} className="hidden">
           <div className="header">
@@ -87,6 +134,7 @@ export default function KeranjangPage() {
             <p>Dokumen: {docNumber}</p>
             <p>Pengguna: {currentUser?.name} ({ROLE_LABELS[currentUser?.role || "household"]})</p>
             <p>Tanggal: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+            <p>Metode: {deliveryMethod === "PICKUP" ? "Ambil Sendiri" : "Pengiriman"}</p>
           </div>
           <table>
             <thead>
@@ -111,21 +159,22 @@ export default function KeranjangPage() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={handlePrint}
-            className="px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#29496d] transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer"
+            className="px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#203a59] transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer flex items-center justify-center gap-2"
           >
-            🖨️ Cetak Bukti Pesanan
+            <ClipboardList className="w-5 h-5" />
+            Cetak Bukti Pesanan
           </button>
+          <Link
+            href="/dashboard"
+            className="px-6 py-3 bg-[#e7eff7] text-[#29496d] font-bold rounded-xl hover:bg-[#d4e2f1] transition-colors flex items-center justify-center gap-2"
+          >
+            Lihat Riwayat Pesanan
+          </Link>
           <Link
             href="/katalog"
             className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
           >
             Lanjut Belanja
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
-          >
-            Lihat Dashboard
           </Link>
         </div>
       </div>
@@ -140,7 +189,7 @@ export default function KeranjangPage() {
         <p className="text-gray-500 mb-8">Belum ada produk di keranjang. Yuk mulai belanja!</p>
         <Link
           href="/katalog"
-          className="inline-flex items-center px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#29496d] transition-colors shadow-lg shadow-[#29496d]/20"
+          className="inline-flex items-center px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#203a59] transition-colors shadow-lg shadow-[#29496d]/20"
         >
           Jelajahi Katalog
           <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,9 +245,7 @@ export default function KeranjangPage() {
                 onClick={() => removeItem(item.productId)}
                 className="p-2 text-gray-300 hover:text-red-500 transition-colors cursor-pointer"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <Trash2 className="w-5 h-5" />
               </button>
             </div>
           ))}
@@ -296,30 +343,91 @@ export default function KeranjangPage() {
               <p className="text-gray-500">No. Dok: <span className="text-gray-700 font-mono font-medium text-xs">{docNumber}</span></p>
             </div>
 
+            {checkoutError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3 mb-4">
+                {checkoutError}
+              </div>
+            )}
+
             {!showCheckout ? (
               <button
-                onClick={() => setShowCheckout(true)}
-                className="w-full py-3.5 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 hover:shadow-[#29496d]/25 cursor-pointer"
+                onClick={() => {
+                  if (!currentUser) {
+                    setCheckoutError("Silakan login terlebih dahulu untuk checkout");
+                    return;
+                  }
+                  setShowCheckout(true);
+                }}
+                className="w-full py-3.5 bg-[#29496d] hover:bg-[#203a59] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 hover:shadow-[#29496d]/25 cursor-pointer"
               >
                 Proses Pesanan
               </button>
             ) : (
               <div className="space-y-3 animate-fade-in">
-                <input
-                  placeholder="Alamat Pengiriman"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d]"
-                  defaultValue="Jl. Contoh No. 123, Jakarta"
-                />
-                <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] cursor-pointer">
-                  <option>Pengiriman Reguler (3-5 hari)</option>
-                  <option>Pengiriman Express (1-2 hari)</option>
-                  <option>Ambil Sendiri</option>
-                </select>
+                {/* Delivery Method Selection */}
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Metode Pengiriman</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setDeliveryMethod("DELIVERY")}
+                      className={`p-3 rounded-xl border text-sm font-medium transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                        deliveryMethod === "DELIVERY"
+                          ? "border-[#29496d] bg-[#f5f7fb] text-[#29496d]"
+                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                      }`}
+                    >
+                      <Truck className="w-5 h-5" />
+                      Pengiriman
+                    </button>
+                    <button
+                      onClick={() => setDeliveryMethod("PICKUP")}
+                      className={`p-3 rounded-xl border text-sm font-medium transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                        deliveryMethod === "PICKUP"
+                          ? "border-[#29496d] bg-[#f5f7fb] text-[#29496d]"
+                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                      }`}
+                    >
+                      <Store className="w-5 h-5" />
+                      Ambil Sendiri
+                    </button>
+                  </div>
+                </div>
+
+                {deliveryMethod === "DELIVERY" && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-1.5 flex items-center"><MapPin className="w-4 h-4 mr-1" /> Alamat Pengiriman</p>
+                    <input
+                      placeholder="Alamat Pengiriman"
+                      value={shippingAddress}
+                      onChange={(e) => setShippingAddress(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d]"
+                    />
+                  </div>
+                )}
+
+                {deliveryMethod === "DELIVERY" && (
+                  <select className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#29496d] cursor-pointer">
+                    <option>Pengiriman Reguler (3-5 hari)</option>
+                    <option>Pengiriman Express (1-2 hari)</option>
+                  </select>
+                )}
+
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-3.5 bg-[#29496d] hover:bg-[#29496d] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 cursor-pointer flex items-center justify-center"
+                  disabled={checkoutLoading}
+                  className="w-full py-3.5 bg-[#29496d] hover:bg-[#203a59] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#29496d]/20 cursor-pointer flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <CheckCircle className="w-5 h-5 mr-2" /> Konfirmasi Pesanan
+                  {checkoutLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      Konfirmasi Pesanan
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -330,6 +438,3 @@ export default function KeranjangPage() {
     </div>
   );
 }
-
-
-
