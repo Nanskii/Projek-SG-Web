@@ -30,7 +30,12 @@ export default function LoginPage() {
               company: data.prismaUser.company || undefined,
             });
           }
-          router.push("/");
+          
+          if (data.prismaUser && data.prismaUser.role === "admin") {
+            router.push("/admin");
+          } else {
+            router.push("/");
+          }
         })
         .catch(() => {
           router.push("/");
@@ -43,9 +48,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#29496d] flex items-center justify-center text-white font-bold text-3xl shadow-xl shadow-[#29496d]/20 mb-4">
-            W
-          </div>
+
           <h1 className="text-2xl font-extrabold text-gray-900">Masuk ke Warunge</h1>
           <p className="text-gray-500 mt-2">Selamat datang kembali!</p>
         </div>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -10,12 +10,18 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const type = searchParams.get("type");
+
   // Check if admin
   const prismaUser = await prisma.user.findUnique({ where: { id: user.id } });
   const isAdmin = prismaUser?.role === "admin";
 
+  // Hanya return semua pesanan jika dipanggil dengan ?type=all dan user adalah admin
+  const fetchAll = type === "all" && isAdmin;
+
   const orders = await prisma.order.findMany({
-    where: isAdmin ? {} : { userId: user.id },
+    where: fetchAll ? {} : { userId: user.id },
     include: {
       items: {
         include: { product: true },

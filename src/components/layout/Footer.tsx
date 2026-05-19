@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex -mt-12 -mb-10">
+            <Link href="/" className="flex -mt-28">
               <img src="/Logo3.png" alt="Logo Warunge" className="w-48 h-auto object-contain bg-transparent" />
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">

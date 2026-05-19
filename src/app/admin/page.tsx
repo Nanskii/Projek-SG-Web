@@ -81,7 +81,7 @@ export default function AdminPage() {
     try {
       const [prodRes, orderRes, catRes] = await Promise.all([
         fetch("/api/products"),
-        fetch("/api/orders"),
+        fetch("/api/orders?type=all"),
         fetch("/api/products").then(() => fetch("/api/products")), // categories via products
       ]);
       const prods = await prodRes.json();

@@ -130,8 +130,8 @@ export default function KatalogContent() {
                 <button
                   onClick={() => setSelectedCategory("all")}
                   className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer ${selectedCategory === "all"
-                      ? "bg-[#f5f7fb] text-[#203a59]"
-                      : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-[#f5f7fb] text-[#203a59]"
+                    : "text-gray-600 hover:bg-gray-50"
                     }`}
                 >
                   <span className="flex items-center"><LayoutGrid className="w-4 h-4 mr-2" /> Semua Kategori</span>
@@ -141,8 +141,8 @@ export default function KatalogContent() {
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer flex items-center justify-between ${selectedCategory === cat.id
-                        ? "bg-[#f5f7fb] text-[#203a59]"
-                        : "text-gray-600 hover:bg-gray-50"
+                      ? "bg-[#f5f7fb] text-[#203a59]"
+                      : "text-gray-600 hover:bg-gray-50"
                       }`}
                   >
                     <span className="flex items-center"><cat.icon className="w-4 h-4 mr-2" /> {cat.name}</span>

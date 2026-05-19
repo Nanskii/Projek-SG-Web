@@ -17,9 +17,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-[#29496d] flex items-center justify-center text-white font-bold text-3xl shadow-xl shadow-[#29496d]/20 mb-4">
-            W
-          </div>
+
           <h1 className="text-2xl font-extrabold text-gray-900">Daftar di Warunge</h1>
           <p className="text-gray-500 mt-2">Buat akun untuk mulai pengadaan barang</p>
         </div>
