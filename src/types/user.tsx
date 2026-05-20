@@ -10,6 +10,7 @@ export interface UserProfile {
   avatar: string;
   email: string;
   company?: string;
+  createdAt: string;
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {

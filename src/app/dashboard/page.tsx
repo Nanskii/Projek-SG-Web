@@ -89,14 +89,32 @@ export default function DashboardPage() {
   const totalSpent = orders.reduce((sum, o) => sum + o.totalAmount, 0);
   const completedOrders = orders.filter((o) => o.status === "SELESAI").length;
 
-  const monthlyData = [
-    { month: "Jan", amount: 1200000 },
-    { month: "Feb", amount: 850000 },
-    { month: "Mar", amount: 2100000 },
-    { month: "Apr", amount: 1750000 },
-    { month: "Mei", amount: totalSpent || 500000 },
-  ];
-  const maxMonthly = Math.max(...monthlyData.map((d) => d.amount));
+  const currentDate = new Date();
+  const createdDate = currentUser.createdAt ? new Date(currentUser.createdAt) : new Date();
+
+  // Tanggal mulai 5 bulan terakhir (jendela bergulir)
+  const trailingStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 4, 1);
+  // Tanggal pembuatan akun
+  const creationStart = new Date(createdDate.getFullYear(), createdDate.getMonth(), 1);
+
+  // Gunakan yang lebih baru antara trailingStart dan creationStart
+  // Dengan begini, grafik tidak akan pernah menampilkan bulan sebelum akun dibuat
+  const startDate = trailingStart < creationStart ? creationStart : trailingStart;
+  
+  const monthlyData = Array.from({ length: 5 }).map((_, i) => {
+    const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+    const monthKey = d.toLocaleString("id-ID", { month: "short" });
+    
+    const monthOrders = orders.filter((o) => {
+      const orderDate = new Date(o.createdAt);
+      return orderDate.getMonth() === d.getMonth() && orderDate.getFullYear() === d.getFullYear();
+    });
+    
+    const amount = monthOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+    return { month: monthKey, amount };
+  });
+
+  const maxMonthly = Math.max(...monthlyData.map((d) => d.amount), 1);
 
   const roleFeatures: Record<string, { title: string; items: React.ReactNode[] }> = {
     enterprise: {
@@ -212,7 +230,7 @@ export default function DashboardPage() {
               {monthlyData.map((d) => (
                 <div key={d.month} className="flex-1 flex flex-col justify-end items-center gap-2 h-full">
                   <span className="text-[10px] sm:text-xs font-semibold text-gray-500 text-center">
-                    {formatCurrency(d.amount).replace("Rp", "").trim()}
+                    {formatCurrency(d.amount)}
                   </span>
                   <div className="w-full flex-1 flex flex-col justify-end">
                     <div 

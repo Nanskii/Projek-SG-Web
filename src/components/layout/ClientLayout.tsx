@@ -29,6 +29,7 @@ function AuthListener() {
                 role: data.prismaUser.role as any,
                 avatar: data.prismaUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.prismaUser.name || "Pengguna")}&background=random`,
                 company: data.prismaUser.company || undefined,
+                createdAt: data.prismaUser.createdAt,
               };
               setCurrentUser(profile);
             }
