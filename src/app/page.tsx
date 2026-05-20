@@ -1,11 +1,15 @@
 import React from "react";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
+import { createClient } from "@/utils/supabase/server";
 import { formatCurrency, getFallbackImage } from "@/lib/utils";
 import { Search, FileText, Zap, Users, LayoutDashboard, ShoppingCart, Package, Paperclip, Home, Smartphone, Shirt, Hammer } from "lucide-react";
 import { categoryIconMap } from "@/data/categories";
 
 export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const products = await prisma.product.findMany({
     include: { category: true }
   });
@@ -203,12 +207,14 @@ export default async function HomePage() {
             Bergabung bersama ribuan perusahaan dan UMKM yang telah mempercayai Warunge untuk kebutuhan pengadaan mereka.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#203a59] font-bold rounded-2xl hover:bg-[#f5f7fb] transition-all shadow-xl shadow-black/10"
-            >
-              Daftar Sekarang — Gratis
-            </Link>
+            {!user && (
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#203a59] font-bold rounded-2xl hover:bg-[#f5f7fb] transition-all shadow-xl shadow-black/10"
+              >
+                Daftar Sekarang — Gratis
+              </Link>
+            )}
             <Link
               href="/katalog"
               className="inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-md text-white font-bold rounded-2xl border border-white/20 hover:bg-white/20 transition-all"

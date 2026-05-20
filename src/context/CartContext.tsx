@@ -86,27 +86,30 @@ export function CartProvider({ children, userId }: { children: React.ReactNode; 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const isGuest = userId === "guest";
 
-  // Load cart from localStorage on mount / userId change
+  // Load cart from DB on mount / userId change
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`cart_${userId}`);
-      if (saved) setItems(JSON.parse(saved));
-      else setItems([]);
-    } catch {
+    if (isGuest) {
       setItems([]);
+      return;
     }
-  }, [userId]);
 
-  // Persist cart to localStorage
-  useEffect(() => {
-    localStorage.setItem(`cart_${userId}`, JSON.stringify(items));
-  }, [items, userId]);
+    fetch('/api/cart')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setItems(data);
+        }
+      })
+      .catch(err => console.error("Failed to load cart", err));
+  }, [isGuest]);
 
-  const addItem = useCallback((item: CartItem) => {
+  const addItem = useCallback(async (item: CartItem) => {
     if (isGuest) {
       setShowLoginModal(true);
       return;
     }
+    
+    // Optimistic UI update
     setItems((prev) => {
       const existing = prev.find((i) => i.productId === item.productId);
       if (existing) {
@@ -116,25 +119,62 @@ export function CartProvider({ children, userId }: { children: React.ReactNode; 
       }
       return [...prev, item];
     });
+
+    try {
+      await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: item.productId, quantity: item.quantity, absolute: false })
+      });
+    } catch (err) {
+      console.error("Failed to add item to cart", err);
+    }
   }, [isGuest]);
 
-  const removeItem = useCallback((productId: string) => {
+  const removeItem = useCallback(async (productId: string) => {
     setItems((prev) => prev.filter((i) => i.productId !== productId));
-  }, []);
+    if (isGuest) return;
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+    try {
+      await fetch(`/api/cart?productId=${productId}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error("Failed to remove item", err);
+    }
+  }, [isGuest]);
+
+  const updateQuantity = useCallback(async (productId: string, quantity: number) => {
     if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => i.productId !== productId));
+      removeItem(productId);
       return;
     }
+    
     setItems((prev) =>
       prev.map((i) => (i.productId === productId ? { ...i, quantity } : i))
     );
-  }, []);
+    
+    if (isGuest) return;
 
-  const clearCart = useCallback(() => {
+    try {
+      await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quantity, absolute: true })
+      });
+    } catch (err) {
+      console.error("Failed to update quantity", err);
+    }
+  }, [isGuest, removeItem]);
+
+  const clearCart = useCallback(async () => {
     setItems([]);
-  }, []);
+    if (isGuest) return;
+
+    try {
+      await fetch('/api/cart', { method: 'DELETE' });
+    } catch (err) {
+      console.error("Failed to clear cart", err);
+    }
+  }, [isGuest]);
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);

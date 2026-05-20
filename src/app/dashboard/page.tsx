@@ -208,11 +208,18 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center"><BarChart3 className="w-5 h-5 mr-2 text-[#29496d]" /> Belanja Bulanan</h3>
-            <div className="flex items-end gap-3 h-48">
+            <div className="flex items-end gap-3 h-56 pt-2">
               {monthlyData.map((d) => (
-                <div key={d.month} className="flex-1 flex flex-col items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-500">{formatCurrency(d.amount).replace("Rp", "").trim()}</span>
-                  <div className="w-full bg-[#29496d] rounded-t-lg transition-all duration-700 hover:bg-[#203a59]" style={{ height: `${(d.amount / maxMonthly) * 100}%`, minHeight: "20px" }} />
+                <div key={d.month} className="flex-1 flex flex-col justify-end items-center gap-2 h-full">
+                  <span className="text-[10px] sm:text-xs font-semibold text-gray-500 text-center">
+                    {formatCurrency(d.amount).replace("Rp", "").trim()}
+                  </span>
+                  <div className="w-full flex-1 flex flex-col justify-end">
+                    <div 
+                      className="w-full bg-[#29496d] rounded-t-md transition-all duration-700 hover:bg-[#203a59]" 
+                      style={{ height: `${(d.amount / maxMonthly) * 100}%`, minHeight: "4px" }} 
+                    />
+                  </div>
                   <span className="text-xs font-medium text-gray-600">{d.month}</span>
                 </div>
               ))}

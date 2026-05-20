@@ -69,29 +69,61 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = await prisma.order.create({
-      data: {
-        userId: user.id,
-        status: "BELUM_BAYAR",
-        totalAmount,
-        shippingAddress: shippingAddress || null,
-        deliveryMethod: deliveryMethod || "DELIVERY",
-        items: {
-          create: items.map((item: { productId: string; quantity: number; price: number }) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Verifikasi dan kurangi stok untuk setiap item
+      for (const item of items) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId }
+        });
+        
+        if (!product) {
+          throw new Error(`Produk dengan ID ${item.productId} tidak ditemukan.`);
+        }
+        
+        if (product.stock < item.quantity) {
+          throw new Error(`Stok ${product.name} tidak mencukupi (sisa ${product.stock}, diminta ${item.quantity}).`);
+        }
+        
+        // Kurangi stok
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } }
+        });
+      }
+
+      // 2. Buat pesanan
+      const order = await tx.order.create({
+        data: {
+          userId: user.id,
+          status: "BELUM_BAYAR",
+          totalAmount,
+          shippingAddress: shippingAddress || null,
+          deliveryMethod: deliveryMethod || "DELIVERY",
+          items: {
+            create: items.map((item: { productId: string; quantity: number; price: number }) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
         },
-      },
-      include: {
-        items: { include: { product: true } },
-      },
+        include: {
+          items: { include: { product: true } },
+        },
+      });
+
+      // 3. Kosongkan keranjang belanja user di database (opsional tapi lebih aman di backend)
+      await tx.cartItem.deleteMany({
+        where: { userId: user.id }
+      });
+
+      return order;
     });
 
-    return NextResponse.json({ success: true, orderId: order.id });
-  } catch (err) {
+    return NextResponse.json({ success: true, orderId: result.id });
+  } catch (err: any) {
     console.error("Error creating order:", err);
-    return NextResponse.json({ error: "Gagal membuat pesanan" }, { status: 500 });
+    // Return specific error message if it's from our stock validation
+    return NextResponse.json({ error: err.message || "Gagal membuat pesanan" }, { status: 400 });
   }
 }
