@@ -52,6 +52,7 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   const { currentUser } = useUser();
   const footerRef = React.useRef<HTMLDivElement>(null);
   const [footerHeight, setFooterHeight] = React.useState(0);
+  const [isScrolledToBottom, setIsScrolledToBottom] = React.useState(false);
 
   React.useEffect(() => {
     const updateHeight = () => {
@@ -65,11 +66,35 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', updateHeight);
   }, []);
 
+  React.useEffect(() => {
+    const handleScroll = () => {
+      // Jendela viewport bagian bawah (Y)
+      const scrollPosition = Math.ceil(window.innerHeight + window.scrollY);
+      // Tinggi dari kontainer konten utama (sebelum footer)
+      const contentHeight = document.documentElement.scrollHeight - footerHeight;
+      
+      // Jika scrollPosition lebih besar dari contentHeight, berarti footer mulai terlihat
+      if (scrollPosition >= contentHeight + 1) {
+        setIsScrolledToBottom(true);
+      } else {
+        setIsScrolledToBottom(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Panggil sekali saat mount untuk set initial state
+    handleScroll();
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [footerHeight]);
+
   return (
     <CartProvider userId={currentUser?.id || "guest"}>
       <div className="bg-gray-900">
         <div 
-          className="relative z-10 bg-white flex flex-col min-h-screen shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-b-3xl" 
+          className={`relative z-10 bg-white flex flex-col min-h-screen shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 ease-in-out ${
+            isScrolledToBottom ? "rounded-b-[2.5rem]" : "rounded-b-none"
+          }`}
           style={{ marginBottom: footerHeight }}
         >
           <Navbar />
