@@ -7,7 +7,7 @@ import { useUser } from "@/context/UserContext";
 import { formatCurrency, generateDocumentNumber, getFallbackImage } from "@/lib/utils";
 import { ROLE_LABELS } from "@/types/user";
 import { DeliveryMethod } from "@/types/order";
-import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle, Loader2, MapPin, Truck, Store } from "lucide-react";
+import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle, Loader2, MapPin, Truck, Store, Printer } from "lucide-react";
 import { categoryIconMap } from "@/data/categories";
 
 interface RecProduct {
@@ -32,6 +32,7 @@ export default function KeranjangPage() {
   const [docNumber] = useState(() => generateDocumentNumber(currentUser?.name?.substring(0, 3).toUpperCase() || "USR"));
   const printRef = useRef<HTMLDivElement>(null);
   const [recommendedProducts, setRecommendedProducts] = useState<RecProduct[]>([]);
+  const [finalOrderData, setFinalOrderData] = useState<any>(null);
 
   const shippingCost = deliveryMethod === "PICKUP" ? 0 : totalAmount > 500000 ? 0 : 15000;
   const grandTotal = totalAmount + shippingCost;
@@ -79,6 +80,7 @@ export default function KeranjangPage() {
       }
 
       setOrderId(data.orderId);
+      setFinalOrderData({ items: [...items], totalAmount, shippingCost, grandTotal });
       setCheckoutDone(true);
       clearCart();
     } catch {
@@ -142,7 +144,7 @@ export default function KeranjangPage() {
               <tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr>
             </thead>
             <tbody>
-              {items.map((item) => (
+              {finalOrderData?.items?.map((item: any) => (
                 <tr key={item.productId}>
                   <td>{item.name}</td>
                   <td>{item.quantity} {item.unit}</td>
@@ -152,17 +154,23 @@ export default function KeranjangPage() {
               ))}
             </tbody>
           </table>
-          <p>Subtotal: {formatCurrency(totalAmount)}</p>
-          <p>Ongkir: {shippingCost === 0 ? "GRATIS" : formatCurrency(shippingCost)}</p>
-          <p className="total">Total: {formatCurrency(grandTotal)}</p>
+          <p>Subtotal: {formatCurrency(finalOrderData?.totalAmount || 0)}</p>
+          <p>Ongkir: {finalOrderData?.shippingCost === 0 ? "GRATIS" : formatCurrency(finalOrderData?.shippingCost || 0)}</p>
+          <p className="total">Total: {formatCurrency(finalOrderData?.grandTotal || 0)}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={handlePrint}
+            className="px-6 py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Printer className="w-5 h-5" /> Cetak Invoice
+          </button>
           <Link
             href="/dashboard"
             className="px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#203a59] transition-colors shadow-lg shadow-[#29496d]/20 flex items-center justify-center gap-2"
           >
-            Lihat Riwayat Pesanan
+            Lihat Riwayat
           </Link>
           <Link
             href="/katalog"
