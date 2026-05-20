@@ -8,6 +8,7 @@ export const users: UserProfile[] = [
     avatar: "/images/avatars/enterprise.png",
     email: "budi@ptmajucorp.co.id",
     company: "PT Maju Corporation",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "u002",
@@ -16,6 +17,7 @@ export const users: UserProfile[] = [
     avatar: "/images/avatars/umkm.png",
     email: "siti@tokoaminah.com",
     company: "Toko Aminah",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "u003",
@@ -23,6 +25,7 @@ export const users: UserProfile[] = [
     role: "household",
     avatar: "/images/avatars/household.png",
     email: "dewi.lestari@gmail.com",
+    createdAt: new Date().toISOString(),
   },
   {
     id: "u004",
@@ -31,5 +34,6 @@ export const users: UserProfile[] = [
     avatar: "/images/avatars/distributor.png",
     email: "agus@distributorpratama.co.id",
     company: "Distributor Pratama",
+    createdAt: new Date().toISOString(),
   },
 ];
