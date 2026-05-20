@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getFallbackImage } from "@/lib/utils";
 import { Frown, ArrowLeft, Flame, Package } from "lucide-react";
 import { categoryIconMap } from "@/data/categories";
 import AddToCartButton from "./AddToCartButton";
@@ -50,7 +50,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16 animate-slide-up">
         {/* Image */}
         <div className="relative aspect-square bg-[#f8fafc] rounded-3xl overflow-hidden flex items-center justify-center text-gray-300">
-          <Icon className="w-32 h-32 sm:w-48 sm:h-48" />
+          <img src={(product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || "")} alt={product.name} className="w-full h-full object-cover" />
         </div>
 
         {/* Info */}
@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             id: product.id,
             name: product.name,
             price: product.price,
-            image: product.imageUrl || "",
+            image: (product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || ""),
             stock: product.stock,
           }} />
         </div>
@@ -99,12 +99,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <Link key={p.id} href={`/katalog/${p.id}`} className="block">
                 <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
                   <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                    <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
-                      {(() => {
-                        const RIcon = categoryIconMap[p.category?.name || ""] || Package;
-                        return <RIcon className="w-20 h-20" />;
-                      })()}
-                    </div>
+                    <img src={(p.imageUrl && p.imageUrl.startsWith("http")) ? p.imageUrl : getFallbackImage(p.id, p.category?.name || "")} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
                   <div className="p-4 flex-1 flex flex-col">
                     <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{p.category?.name?.replace("-", " ")}</p>

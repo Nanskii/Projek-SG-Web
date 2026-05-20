@@ -7,7 +7,7 @@ import { CategoryType } from "@/types/product";
 import { LayoutGrid, Search, Package } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getFallbackImage } from "@/lib/utils";
 
 type SortOption = "default" | "price-asc" | "price-desc" | "newest";
 
@@ -267,7 +267,7 @@ function CatalogProductCard({ product, viewMode }: { product: DbProduct; viewMod
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.imageUrl || "",
+      image: (product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || ""),
       quantity: 1,
       unit: "pcs",
     });
@@ -278,9 +278,7 @@ function CatalogProductCard({ product, viewMode }: { product: DbProduct; viewMod
       <Link href={`/katalog/${product.id}`} className="block">
         <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-lg hover:shadow-[#29496d]/10 transition-all duration-300 p-4 flex gap-4">
           <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-            <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300">
-              <Icon className="w-10 h-10 sm:w-16 sm:h-16" />
-            </div>
+            <img src={(product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || "")} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           </div>
           <div className="flex-1 flex flex-col justify-between min-w-0">
             <div>
@@ -306,9 +304,7 @@ function CatalogProductCard({ product, viewMode }: { product: DbProduct; viewMod
     <Link href={`/katalog/${product.id}`} className="block">
       <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
         <div className="relative aspect-square bg-gray-100 overflow-hidden">
-          <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
-            <Icon className="w-20 h-20" />
-          </div>
+          <img src={(product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || "")} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button onClick={handleAddToCart} className="w-10 h-10 bg-[#29496d] hover:bg-[#203a59] text-white rounded-full flex items-center justify-center shadow-lg cursor-pointer">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

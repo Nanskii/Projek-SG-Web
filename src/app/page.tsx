@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getFallbackImage } from "@/lib/utils";
 import { Search, FileText, Zap, Users, LayoutDashboard, ShoppingCart, Package, Paperclip, Home, Smartphone, Shirt, Hammer } from "lucide-react";
 import { categoryIconMap } from "@/data/categories";
 
@@ -9,7 +9,7 @@ export default async function HomePage() {
   const products = await prisma.product.findMany({
     include: { category: true }
   });
-  
+
   const categories = await prisma.category.findMany({
     include: { _count: { select: { products: true } } }
   });
@@ -126,15 +126,13 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-            {bestSellers.map((product: { id: string; name: string; price: number; stock: number; category: { name: string } | null }) => {
-              const CatIcon = categoryIconMap[product.category?.name || ""] || Package;
+            {bestSellers.map((product: { id: string; name: string; price: number; stock: number; imageUrl?: string | null; category: { name: string } | null }) => {
+              const imgUrl = (product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || "");
               return (
                 <Link key={product.id} href={`/katalog/${product.id}`} className="block">
                   <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
                     <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                      <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
-                        <CatIcon className="w-20 h-20" />
-                      </div>
+                      <img src={imgUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
                     <div className="p-4 flex-1 flex flex-col">
                       <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{product.category?.name?.replace("-", " ")}</p>
@@ -172,15 +170,13 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
-          {promoProducts.map((product: { id: string; name: string; price: number; stock: number; category: { name: string } | null }) => {
-            const CatIcon = categoryIconMap[product.category?.name || ""] || Package;
+          {promoProducts.map((product: { id: string; name: string; price: number; stock: number; imageUrl?: string | null; category: { name: string } | null }) => {
+            const imgUrl = (product.imageUrl && product.imageUrl.startsWith("http")) ? product.imageUrl : getFallbackImage(product.id, product.category?.name || "");
             return (
               <Link key={product.id} href={`/katalog/${product.id}`} className="block">
                 <div className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
                   <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                    <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
-                      <CatIcon className="w-20 h-20" />
-                    </div>
+                    <img src={imgUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
                   <div className="p-4 flex-1 flex flex-col">
                     <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{product.category?.name?.replace("-", " ")}</p>

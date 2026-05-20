@@ -48,3 +48,26 @@ export function getStarRating(rating: number): string[] {
   while (stars.length < 5) stars.push("empty");
   return stars;
 }
+
+export function getFallbackImage(id: string, categoryName: string): string {
+  const cat = (categoryName || "").toLowerCase();
+
+  // 5 Foto Statis Berkualitas Tinggi (Unsplash)
+  const images = {
+    sembako: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400",
+    atk: "https://plus.unsplash.com/premium_photo-1683120746952-651521089299?q=80&w=435&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    fashion: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=400",
+    rumah: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=400",
+    bangunan: "https://plus.unsplash.com/premium_photo-1681989490797-dbe51c438b61?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    default: "https://images.unsplash.com/photo-1584824486509-112e4181ff6b?auto=format&fit=crop&q=80&w=400", // ATK / Umum / Box
+  };
+
+  if (cat.includes("sembako")) return images.sembako;
+  if (cat.includes("elektronik")) return images.default;
+  if (cat.includes("fashion") || cat.includes("pakaian")) return images.fashion;
+  if (cat.includes("atk") || cat.includes("tulis")) return images.atk;
+  if (cat.includes("rumah")) return images.rumah;
+  if (cat.includes("bangunan") || cat.includes("material")) return images.bangunan;
+
+  return images.default;
+}

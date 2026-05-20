@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
-import { formatCurrency, generateDocumentNumber } from "@/lib/utils";
+import { formatCurrency, generateDocumentNumber, getFallbackImage } from "@/lib/utils";
 import { ROLE_LABELS } from "@/types/user";
 import { DeliveryMethod } from "@/types/order";
 import { ShoppingCart, Package, Trash2, ClipboardList, CheckCircle, Loader2, MapPin, Truck, Store } from "lucide-react";
@@ -15,6 +15,7 @@ interface RecProduct {
   name: string;
   price: number;
   stock: number;
+  imageUrl?: string | null;
   category: { name: string } | null;
 }
 
@@ -157,22 +158,15 @@ export default function KeranjangPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={handlePrint}
-            className="px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#203a59] transition-colors shadow-lg shadow-[#29496d]/20 cursor-pointer flex items-center justify-center gap-2"
-          >
-            <ClipboardList className="w-5 h-5" />
-            Cetak Bukti Pesanan
-          </button>
           <Link
             href="/dashboard"
-            className="px-6 py-3 bg-[#e7eff7] text-[#29496d] font-bold rounded-xl hover:bg-[#d4e2f1] transition-colors flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-[#29496d] text-white font-bold rounded-xl hover:bg-[#203a59] transition-colors shadow-lg shadow-[#29496d]/20 flex items-center justify-center gap-2"
           >
             Lihat Riwayat Pesanan
           </Link>
           <Link
             href="/katalog"
-            className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center"
           >
             Lanjut Belanja
           </Link>
@@ -215,8 +209,8 @@ export default function KeranjangPage() {
               className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
             >
               <Link href={`/katalog/${item.productId}`} className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="w-20 h-20 rounded-xl bg-[#f8fafc] flex items-center justify-center text-gray-400 flex-shrink-0">
-                  <Package className="w-8 h-8" />
+                <div className="w-20 h-20 rounded-xl bg-[#f8fafc] flex items-center justify-center text-gray-400 flex-shrink-0 overflow-hidden">
+                  <img src={(item.image && item.image.startsWith("http")) ? item.image : getFallbackImage(item.productId, "product")} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 truncate hover:text-[#29496d] transition-colors">{item.name}</h3>
@@ -270,9 +264,7 @@ export default function KeranjangPage() {
                     <div key={p.id} className="group bg-white rounded-2xl border border-gray-100 hover:border-[#a3b0cc] hover:shadow-xl hover:shadow-[#29496d]/10 transition-all duration-300 overflow-hidden h-full flex flex-col">
                       <Link href={`/katalog/${p.id}`}>
                         <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                          <div className="w-full h-full bg-[#f8fafc] flex items-center justify-center text-gray-300 group-hover:scale-110 transition-transform duration-500">
-                            <CatIcon className="w-16 h-16" />
-                          </div>
+                          <img src={(p.imageUrl && p.imageUrl.startsWith("http")) ? p.imageUrl : getFallbackImage(p.id, p.category?.name || "")} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                         <div className="p-3 flex-1 flex flex-col">
                           <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{p.category?.name?.replace("-", " ")}</p>
@@ -290,7 +282,7 @@ export default function KeranjangPage() {
                               productId: p.id,
                               name: p.name,
                               price: p.price,
-                              image: "",
+                              image: (p.imageUrl && p.imageUrl.startsWith("http")) ? p.imageUrl : getFallbackImage(p.id, p.category?.name || ""),
                               quantity: 1,
                               unit: "pcs",
                             });
